@@ -3,13 +3,13 @@ import { CreateForumDto } from './dto/create-forum.dto';
 import { UpdateForumDto } from './dto/update-forum.dto';
 
 @Injectable()
-export class ForumService {
+export class ForumsService {
   create(createForumDto: CreateForumDto) {
     return 'This action adds a new forum';
   }
 
   findAll() {
-    return `This action returns all forum`;
+    return `This action returns all forums`;
   }
 
   findOne(id: number) {

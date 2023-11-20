@@ -23,7 +23,7 @@ export class UsersController {
 
   @Post()
   userPoints(@Body() givePointsDto: GivePointsDto) {
-    return this.usersService.create(givePointsDto);
+    return this.usersService.givePoints(givePointsDto);
   }
 
   @Get()

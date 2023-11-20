@@ -1,34 +1,34 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ForumService } from './forum.service';
+import { ForumsService } from './forums.service';
 import { CreateForumDto } from './dto/create-forum.dto';
 import { UpdateForumDto } from './dto/update-forum.dto';
 
-@Controller('forum')
-export class ForumController {
-  constructor(private readonly forumService: ForumService) {}
+@Controller('forums')
+export class ForumsController {
+  constructor(private readonly forumsService: ForumsService) {}
 
   @Post()
   create(@Body() createForumDto: CreateForumDto) {
-    return this.forumService.create(createForumDto);
+    return this.forumsService.create(createForumDto);
   }
 
   @Get()
   findAll() {
-    return this.forumService.findAll();
+    return this.forumsService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.forumService.findOne(+id);
+    return this.forumsService.findOne(+id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateForumDto: UpdateForumDto) {
-    return this.forumService.update(+id, updateForumDto);
+    return this.forumsService.update(+id, updateForumDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.forumService.remove(+id);
+    return this.forumsService.remove(+id);
   }
 }
