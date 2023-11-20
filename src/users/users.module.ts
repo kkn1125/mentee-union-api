@@ -3,7 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { ApiResponseModule } from 'src/api-response/api-response.module';
+import { ApiResponseModule } from '@/api-response/api-response.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), ApiResponseModule],

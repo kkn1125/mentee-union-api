@@ -24,6 +24,14 @@ async function bootstrap() {
     new ApiResponseInterceptor(app.get<ApiResponseService>(ApiResponseService)),
   );
 
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'http://localhost:8080',
+    ],
+  });
+
   await app.listen(port, () => {
     logger.log(`listening on http://localhost:${port}`);
   });

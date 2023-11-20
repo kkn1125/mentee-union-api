@@ -4,9 +4,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserRecommend } from './user-recommend.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -18,6 +20,15 @@ export class User extends BaseEntity {
 
   @Column()
   email: string;
+
+  @Column()
+  phone_number: string;
+
+  @Column()
+  birth: Date;
+
+  @Column()
+  gender: string;
 
   /* 해시 처리된 패스워드 */
   @Column()
@@ -51,4 +62,7 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.users)
+  userRecommends: UserRecommend[];
 }

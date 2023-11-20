@@ -5,6 +5,7 @@ import { GivePointsDto } from './dto/give-points.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { ApiResponseService } from '@/api-response/api-response.service';
 
 @Injectable()
 export class UsersService {
@@ -14,23 +15,21 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    let flag = false;
     const qr = this.userRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
 
     try {
-      await this.userRepository.save(createUserDto, {
+      const dto = await this.userRepository.save(createUserDto, {
         transaction: true,
       });
       await qr.commitTransaction();
-      flag = true;
+      await qr.release();
+      return dto;
     } catch (error) {
       await qr.rollbackTransaction();
-      flag = false;
-    } finally {
       await qr.release();
-      return flag;
+      ApiResponseService.BAD_REQUEST('user create was rollback.');
     }
   }
 
@@ -41,7 +40,7 @@ export class UsersService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} user`;
+    return this.userRepository.findOne({ where: { id } });
   }
 
   givePoints(givePointsDto: GivePointsDto) {

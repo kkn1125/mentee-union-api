@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  INDEX `fk_forum_user_idx` (`user_id` ASC) VISIBLE,
-  CONSTRAINT `fk_forum_user`
+  INDEX `fk_forums_user_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_forums_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  INDEX `fk_seminar_host1_idx` (`host_id` ASC) VISIBLE,
+  INDEX `fk_seminars_host1_idx` (`host_id` ASC) VISIBLE,
   INDEX `fk_seminar_category1_idx` (`category_id` ASC) VISIBLE,
   CONSTRAINT `fk_seminar_host1`
     FOREIGN KEY (`host_id`)
@@ -113,8 +113,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar_participant` (
   `seminar_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `is_confirm` TINYINT NOT NULL DEFAULT 0,
-  INDEX `fk_seminar_has_user_user1_idx` (`user_id` ASC) VISIBLE,
-  INDEX `fk_seminar_has_user_seminar1_idx` (`seminar_id` ASC) INVISIBLE,
+  INDEX `fk_seminars_has_users_users1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_seminars_has_users_seminars1_idx` (`seminar_id` ASC) VISIBLE,
   PRIMARY KEY (`seminar_id`, `user_id`),
   CONSTRAINT `fk_seminar_has_user_seminar1`
     FOREIGN KEY (`seminar_id`)
@@ -199,6 +199,7 @@ ENGINE = InnoDB;
 -- Table `mentee-union`.`user-recommend`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`user-recommend` (
+  `id` INT NOT NULL AUTO_INCREMENT,
   `giver_id` INT NOT NULL,
   `receiver_id` INT NOT NULL,
   `points` INT NOT NULL DEFAULT 1,
@@ -206,15 +207,15 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user-recommend` (
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`giver_id`, `receiver_id`),
-  INDEX `fk_user_has_user_user4_idx` (`receiver_id` ASC) VISIBLE,
-  INDEX `fk_user_has_user_user3_idx` (`giver_id` ASC) VISIBLE,
-  CONSTRAINT `fk_user_has_user_user3`
+  PRIMARY KEY (`id`, `giver_id`, `receiver_id`),
+  INDEX `fk_users_has_users_users4_idx` (`receiver_id` ASC) VISIBLE,
+  INDEX `fk_users_has_users_users3_idx` (`giver_id` ASC) VISIBLE,
+  CONSTRAINT `fk_users_has_users_users3`
     FOREIGN KEY (`giver_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_has_user_user4`
+  CONSTRAINT `fk_users_has_users_users4`
     FOREIGN KEY (`receiver_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION

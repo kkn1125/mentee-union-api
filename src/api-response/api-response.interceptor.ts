@@ -15,7 +15,7 @@ export class ApiResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
-
+    console.log('인터셉터');
     return next.handle().pipe(
       map((data) =>
         this.apiResponseService.output({
