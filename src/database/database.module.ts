@@ -15,5 +15,6 @@ import databaseConfig from '@/config/database.config';
     }),
   ],
   providers: [],
+  exports: [],
 })
 export class DatabaseModule {}

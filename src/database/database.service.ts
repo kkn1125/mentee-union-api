@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import { Initialize1700558286023 } from 'migrations/1700558286023-initialize';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 ('typeorm-naming-strategies');
 
@@ -31,6 +32,8 @@ export class DatabaseService implements TypeOrmOptionsFactory {
       synchronize: false,
       timezone: '+09:00',
       namingStrategy: new SnakeNamingStrategy(),
+      migrations: [Initialize1700558286023],
+      migrationsRun: true,
     };
   }
 }
