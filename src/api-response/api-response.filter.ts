@@ -7,13 +7,7 @@ import {
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { ApiResponseService } from './api-response.service';
-
-/* DB 에러 처리 위한 인터페이스 */
-// interface Custom {
-//   code: string;
-//   sqlMessage: string;
-// }
-// interface QueryFailedErrors extends QueryFailedError, Custom {}
+import { QueryFailedErrors } from 'types/global';
 
 @Catch()
 export class ApiResponseFilter implements ExceptionFilter {
@@ -34,21 +28,24 @@ export class ApiResponseFilter implements ExceptionFilter {
     // console.log(exception.name);
 
     if (exception instanceof QueryFailedError) {
+      //@ts-ignore
+      console.log(exception.code);
       /* DB 에러 */
       /* 예외 처리는 sentry에서 db 예외처리를 중요하게 다루어야 됨. */
       response.status(status).json(
         this.apiResponseService.output({
           ok: status === 200 || status === 201,
           code: status,
-          message: hasMessage ? message['message'] : message,
-          detail: detail,
-          // message: (exception as unknown as QueryFailedErrors).code,
-          // detail: (exception as unknown as QueryFailedErrors).sqlMessage,
+          // message: hasMessage ? message['message'] : message,
+          // detail: detail,
+          message: (exception as unknown as QueryFailedErrors).code,
+          detail: (exception as unknown as QueryFailedErrors).sqlMessage,
           // path: request.url,
           // timestamp: new Date().toISOString(),
         }),
       );
     } else {
+      console.log('일반에러', exception, message);
       /* 일반 에러 */
       response.status(status).json(
         this.apiResponseService.output({

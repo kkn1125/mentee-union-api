@@ -5,9 +5,9 @@ import {
   NestInterceptor,
   RequestTimeoutException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { Observable, TimeoutError, catchError, map, throwError } from 'rxjs';
 import { ApiResponseService } from './api-response.service';
-import { Response } from 'express';
 
 @Injectable()
 export class ApiResponseInterceptor implements NestInterceptor {
