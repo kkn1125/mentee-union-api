@@ -35,6 +35,8 @@ export class UserRecommend extends BaseEntity {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => User, (user) => user.userRecommends)
-  users: User[];
+  @ManyToOne(() => User, (user) => user.givers)
+  giver: User;
+  @ManyToOne(() => User, (user) => user.receivers)
+  receiver: User;
 }

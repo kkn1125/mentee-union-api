@@ -63,6 +63,12 @@ export class User extends BaseEntity {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.users)
-  userRecommends: UserRecommend[];
+  @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.giver)
+  givers: User[];
+  @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.receiver)
+  receivers: User[];
+  // @ManyToMany(() => User, (user) => user.giver)
+  // receiver: User[];
+  // @ManyToMany(() => User, (user) => user.receiver)
+  // giver: User[];
 }

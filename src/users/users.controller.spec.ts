@@ -94,6 +94,9 @@ describe('UsersController', () => {
       username: 'devkimson',
       email: 'devkimson@gmail.com',
       password: '1234',
+      phone_number: '010-3434-4545',
+      birth: new Date(),
+      gender: '0',
     });
     expect(user.email).toStrictEqual('test@gmail.com');
   });

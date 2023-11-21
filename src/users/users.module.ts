@@ -4,9 +4,18 @@ import { UsersService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { ApiResponseModule } from '@/api-response/api-response.module';
+import { LoggerModule } from '@/logger/logger.module';
+import { ConfigModule } from '@nestjs/config';
+import encodeConfig from '@/config/encode.config';
+import { UserRecommend } from './entities/user-recommend.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), ApiResponseModule],
+  imports: [
+    TypeOrmModule.forFeature([User, UserRecommend]),
+    ApiResponseModule,
+    LoggerModule,
+    ConfigModule.forFeature(encodeConfig),
+  ],
   controllers: [UsersController],
   providers: [UsersService],
 })

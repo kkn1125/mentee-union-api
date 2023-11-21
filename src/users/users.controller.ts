@@ -1,3 +1,4 @@
+import { ApiResponseService } from '@/api-response/api-response.service';
 import {
   Body,
   Controller,
@@ -8,20 +9,25 @@ import {
   Put,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-import { GivePointsDto } from './dto/give-points.dto';
+import { LoggerService } from '@/logger/logger.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly logger: LoggerService,
+  ) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
+    this.logger.debug(createUserDto);
     return this.usersService.create(createUserDto);
   }
 
-  @Post()
+  @Post('user-points')
   userPoints(@Body() givePointsDto: GivePointsDto) {
     return this.usersService.givePoints(givePointsDto);
   }
@@ -43,6 +49,9 @@ export class UsersController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    const result = this.usersService.softRemove(+id);
+    if (result) {
+      ApiResponseService.SUCCESS('success');
+    }
   }
 }
