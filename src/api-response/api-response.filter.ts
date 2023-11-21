@@ -32,6 +32,7 @@ export class ApiResponseFilter implements ExceptionFilter {
       typeof message === 'object' && 'message' in (message as any);
     // console.log(Object.keys(exception));
     // console.log(exception.name);
+
     if (exception instanceof QueryFailedError) {
       /* DB 에러 */
       /* 예외 처리는 sentry에서 db 예외처리를 중요하게 다루어야 됨. */

@@ -17,14 +17,16 @@ export class ApiResponseInterceptor implements NestInterceptor {
     const response = ctx.getResponse<Response>();
     console.log('인터셉터');
     return next.handle().pipe(
-      map((data) =>
-        this.apiResponseService.output({
+      map((data) => {
+        console.log('인터셉터 데이터', data);
+        return this.apiResponseService.output({
           ok: response.statusCode === 200 || response.statusCode === 201,
           code: response.statusCode,
           data,
-        }),
-      ),
+        });
+      }),
       catchError((err) => {
+        console.log('err', err);
         if (err instanceof TimeoutError) {
           return throwError(() => new RequestTimeoutException());
         }
