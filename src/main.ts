@@ -7,10 +7,11 @@ import { ApiResponseFilter } from './api-response/api-response.filter';
 import { ApiResponseInterceptor } from './api-response/api-response.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const logger = new ConsoleLogger('System');
-
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
   const configService = app.get(ConfigService);
+  const logger = new ConsoleLogger('System');
   const port = configService.get<number>('server.port');
 
   app.setGlobalPrefix('/api', {

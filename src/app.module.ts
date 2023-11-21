@@ -7,6 +7,9 @@ import { MentoringModule } from './mentoring/mentoring.module';
 import { ResourcesModule } from './resources/resources.module';
 import { SeminarsModule } from './seminars/seminars.module';
 import { UsersModule } from './users/users.module';
+import { LoggerModule } from './logger/logger.module';
+import { HttpModule } from '@nestjs/axios';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +17,7 @@ import { UsersModule } from './users/users.module';
       isGlobal: true,
       load: [serverConfig],
     }),
+    HttpModule.register({}),
     DatabaseModule,
     UsersModule,
     MentoringModule,
@@ -21,6 +25,8 @@ import { UsersModule } from './users/users.module';
     ResourcesModule,
     DatabaseModule,
     ForumsModule,
+    LoggerModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
