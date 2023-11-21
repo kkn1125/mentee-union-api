@@ -12,9 +12,9 @@ import { UserRecommend } from './entities/user-recommend.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, UserRecommend]),
+    ConfigModule.forFeature(encodeConfig),
     ApiResponseModule,
     LoggerModule,
-    ConfigModule.forFeature(encodeConfig),
   ],
   controllers: [UsersController],
   providers: [UsersService],

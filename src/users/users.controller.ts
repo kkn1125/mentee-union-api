@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GivePointsDto } from './dto/give-points.dto';
@@ -22,13 +23,29 @@ export class UsersController {
   ) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    this.logger.debug(createUserDto);
+  create(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        stopAtFirstError: true,
+      }),
+    )
+    createUserDto: CreateUserDto,
+  ) {
+    // this.logger.debug(createUserDto);
     return this.usersService.create(createUserDto);
   }
 
   @Post('user-points')
-  userPoints(@Body() givePointsDto: GivePointsDto) {
+  userPoints(
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        stopAtFirstError: true,
+      }),
+    )
+    givePointsDto: GivePointsDto,
+  ) {
     return this.usersService.givePoints(givePointsDto);
   }
 

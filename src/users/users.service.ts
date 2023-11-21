@@ -3,12 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as cryptoJS from 'crypto-js';
-import { Repository } from 'typeorm';
+import { EntityNotFoundError, QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserRecommend } from './entities/user-recommend.entity';
+import { QueryFailedErrors } from 'types/global';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,13 @@ export class UsersService {
     await qr.startTransaction();
 
     try {
+      this.userRepository.findOne({
+        where: [
+          { email: createUserDto.email },
+          { username: createUserDto.username },
+        ],
+      });
+
       createUserDto.password = this.encodePassword(createUserDto.password);
 
       const dto = await this.userRepository.save(createUserDto, {
@@ -35,10 +43,16 @@ export class UsersService {
       await qr.release();
       return dto;
     } catch (error) {
-      console.log(error);
       await qr.rollbackTransaction();
       await qr.release();
-      ApiResponseService.BAD_REQUEST('user create was rollback.');
+      if (error instanceof QueryFailedError) {
+        ApiResponseService.BAD_REQUEST(
+          (error as QueryFailedErrors).code,
+          (error as QueryFailedErrors).sqlMessage,
+        );
+      } else {
+        ApiResponseService.BAD_REQUEST('user create was rollback.');
+      }
     }
   }
 
@@ -109,93 +123,103 @@ export class UsersService {
     const userRecommendQr =
       this.userRecommendRepository.manager.connection.createQueryRunner();
 
-    const giverId = givePointsDto.giver_id;
-    const receiverId = givePointsDto.receiver_id;
+    const giverId = +givePointsDto.giver_id;
+    const receiverId = +givePointsDto.receiver_id;
 
-    await userRecommendQr.startTransaction();
+    const points: number[] = [];
+
+    // 사용자 존재 검증
     try {
+      await Promise.all([
+        this.userRepository.findOneOrFail({
+          where: { id: giverId },
+          transaction: true,
+        }),
+        this.userRepository.findOneOrFail({
+          where: { id: receiverId },
+          transaction: true,
+        }),
+      ]);
+    } catch (error) {
+      if (error instanceof EntityNotFoundError) {
+        ApiResponseService.NOT_FOUND('not found user', error.message);
+      } else {
+        ApiResponseService.BAD_REQUEST(error, 'wrong query');
+      }
+    }
+
+    // /* 추천 데이터 저장 */
+    try {
+      await userRecommendQr.startTransaction();
       /* give session 저장 */
       await this.userRecommendRepository.save(givePointsDto, {
         transaction: true,
       });
+
+      /* 점수 합산 조회 */
+      /* set variable */
+      await userRecommendQr.query(`SET @TARGET_ID=?`, [giverId]);
+
+      /* giver 점수 조회 */
+      const { giver_recommend_points, giver_received_points } =
+        (
+          await userRecommendQr.query(`SELECT 
+          COUNT(CASE
+              WHEN giver_id = @TARGET_ID THEN giver_id
+          END) AS giver_recommend_points,
+          SUM(CASE
+              WHEN receiver_id = @TARGET_ID THEN points
+          END) AS giver_received_points
+      FROM
+          user_recommend`)
+        )[0] || {};
+      points[0] = +giver_recommend_points + +giver_received_points;
+
+      /* replace variable value */
+      await userRecommendQr.query(`SET @TARGET_ID=?`, [receiverId]);
+
+      /* receiver 점수 조회 */
+      const { receiver_recommend_points, receiver_received_points } =
+        (
+          await userRecommendQr.query(`SELECT 
+          COUNT(CASE
+              WHEN giver_id = @TARGET_ID THEN giver_id
+          END) AS receiver_recommend_points,
+          SUM(CASE
+              WHEN receiver_id = @TARGET_ID THEN points
+          END) AS receiver_received_points
+      FROM
+          user_recommend`)
+        )[0] || {};
+      points[1] = +receiver_recommend_points + +receiver_received_points;
+
+      /* initialize variable */
+      await userRecommendQr.query(`SET @TARGET_ID=null`);
+
       await userRecommendQr.commitTransaction();
       await userRecommendQr.release();
     } catch (error) {
-      console.log(error);
       await userRecommendQr.rollbackTransaction();
       await userRecommendQr.release();
-      ApiResponseService.BAD_REQUEST('fail save user recommend data');
-    } finally {
-      /* 기버 기준 */
-      const givers = await this.userRecommendRepository.find({
-        where: {
-          giver_id: giverId,
-        },
-      });
-      const giversReceiver = await this.userRecommendRepository.find({
-        where: {
-          receiver_id: giverId,
-        },
-      });
-      /* 리시버 기준 */
-      const receiversGiver = await this.userRecommendRepository.find({
-        where: {
-          giver_id: receiverId,
-        },
-      });
-      const receivers = await this.userRecommendRepository.find({
-        where: {
-          receiver_id: receiverId,
-        },
-      });
-
-      /* 기버가 추천한 것과 받은 것 점수 합산 */
-      const giversPoints = givers.reduce((acc) => (acc += 1), 0);
-      const giversReceivePoints = giversReceiver.reduce(
-        (acc, giverReceive) => (acc += giverReceive.points),
-        0,
-      );
-
-      /* 리시버가 추천한 것과 받은 것 점수 합산 */
-      const receiversPoints = receivers.reduce(
-        (acc, receiver) => (acc += receiver.points),
-        0,
-      );
-      const receiversGivePoints = receiversGiver.reduce((acc) => (acc += 1), 0);
-
-      /* 기버의 총 점수(추천 받은 총 점수 + 추천 한 횟수 당 1점) 합산 */
-      const giverTotalPoints = giversPoints + giversReceivePoints;
-      /* 리시버의 총 점수(추천 받은 총 점수 + 추천 한 횟수 당 1점) 합산 */
-      const receiverTotalPoints = receiversGivePoints + receiversPoints;
-
-      await userQr.startTransaction();
-      try {
-        const giverObj = await this.userRepository.findOne({
-          where: { id: giverId },
-        });
-        const receiverObj = await this.userRepository.findOne({
-          where: { id: receiverId },
-        });
-
-        /* giver 추천 점수 */
-        giverObj.points = +giverTotalPoints;
-        await this.userRepository.save(giverObj, {
-          transaction: true,
-        });
-
-        /* receiver 받은 점수 */
-        receiverObj.points = +receiverTotalPoints;
-        await this.userRepository.save(receiverObj, { transaction: true });
-        await userQr.commitTransaction();
-        await userQr.release();
-      } catch (error) {
-        await userQr.rollbackTransaction();
-        await userQr.release();
-        ApiResponseService.BAD_REQUEST('fail save giver, receiver data');
-      }
-
-      ApiResponseService.SUCCESS('success give points to receiver');
     }
+
+    /* 기버 점수 저장 */
+    try {
+      await userQr.startTransaction();
+      await this.userRepository.update(giverId, {
+        points: points[0],
+      });
+      await this.userRepository.update(receiverId, {
+        points: points[1],
+      });
+      await userQr.commitTransaction();
+      await userQr.release();
+    } catch (error) {
+      await userQr.rollbackTransaction();
+      await userQr.release();
+    }
+
+    ApiResponseService.SUCCESS('success give points to receiver');
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -226,7 +250,7 @@ export class UsersService {
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();
-      ApiResponseService.BAD_REQUEST('user remove was rollback.');
+      ApiResponseService.BAD_REQUEST(error, 'user remove was rollback.');
     }
   }
 
@@ -242,7 +266,7 @@ export class UsersService {
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();
-      ApiResponseService.BAD_REQUEST('user soft remove was rollback.');
+      ApiResponseService.BAD_REQUEST(error, 'user soft remove was rollback.');
     }
   }
 
