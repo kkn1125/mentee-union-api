@@ -29,12 +29,15 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `password` VARCHAR(150) NOT NULL,
   `level` INT NOT NULL DEFAULT 0,
   `points` INT NOT NULL DEFAULT 0,
-  `last_login_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `fail_login_count` INT NULL DEFAULT 0,
+  `last_login_at` TIMESTAMP NULL DEFAULT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'logout',
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -63,7 +66,7 @@ ENGINE = InnoDB;
 -- Table `mentee-union`.`category`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`category` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
@@ -113,12 +116,13 @@ ENGINE = InnoDB;
 -- Table `mentee-union`.`seminar_participant`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar_participant` (
+  `id` INT NOT NULL AUTO_INCREMENT,
   `seminar_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `is_confirm` TINYINT NOT NULL DEFAULT 0,
   INDEX `fk_seminars_has_users_users1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_seminars_has_users_seminars1_idx` (`seminar_id` ASC) VISIBLE,
-  PRIMARY KEY (`seminar_id`, `user_id`),
+  PRIMARY KEY (`id`, `user_id`, `seminar_id`),
   CONSTRAINT `fk_seminar_has_user_seminar1`
     FOREIGN KEY (`seminar_id`)
     REFERENCES `mentee-union`.`seminar` (`id`)
@@ -177,20 +181,20 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor_mentee_matche` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`, `mentor_id`, `mentee_id`, `mento-mentee-session_id`),
-  INDEX `fk_users_has_users_users2_idx` (`mentee_id` ASC) VISIBLE,
-  INDEX `fk_users_has_users_users1_idx` (`mentor_id` ASC) VISIBLE,
-  INDEX `fk_mentor-mentee-matches_mento-mentee-session1_idx` (`mento-mentee-session_id` ASC) VISIBLE,
-  CONSTRAINT `fk_users_has_users_users1`
+  INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC) VISIBLE,
+  INDEX `fk_mentor_mentee_matches_mento_mentee_users1_idx` (`mentor_id` ASC) VISIBLE,
+  INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mento-mentee-session_id` ASC) VISIBLE,
+  CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users1`
     FOREIGN KEY (`mentor_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_users_has_users_users2`
+  CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users2`
     FOREIGN KEY (`mentee_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_mentor-mentee-matches_mento-mentee-session1`
+  CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_session1`
     FOREIGN KEY (`mento-mentee-session_id`)
     REFERENCES `mentee-union`.`mento_mentee_session` (`id`)
     ON DELETE NO ACTION
@@ -211,14 +215,14 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user_recommend` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`, `giver_id`, `receiver_id`),
-  INDEX `fk_users_has_users_users4_idx` (`receiver_id` ASC) VISIBLE,
-  INDEX `fk_users_has_users_users3_idx` (`giver_id` ASC) VISIBLE,
-  CONSTRAINT `fk_users_has_users_users3`
+  INDEX `fk_users_has_users_users3_idx` (`receiver_id` ASC) INVISIBLE,
+  INDEX `fk_users_has_users_users2_idx` (`giver_id` ASC) VISIBLE,
+  CONSTRAINT `fk_users_has_users_users2`
     FOREIGN KEY (`giver_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_users_has_users_users4`
+  CONSTRAINT `fk_users_has_users_users3`
     FOREIGN KEY (`receiver_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
