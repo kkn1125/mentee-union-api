@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(45) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
+  `phone_number` VARCHAR(45) NOT NULL,
+  `birth` DATE NOT NULL,
+  `gender` TINYINT(10) NOT NULL DEFAULT 0,
   `password` VARCHAR(150) NOT NULL,
   `level` INT NOT NULL DEFAULT 0,
   `points` INT NOT NULL DEFAULT 0,
@@ -139,9 +142,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`mento-mentee-session`
+-- Table `mentee-union`.`mento_mentee_session`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`mento-mentee-session` (
+CREATE TABLE IF NOT EXISTS `mentee-union`.`mento_mentee_session` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `category_id` INT NOT NULL,
   `topic` VARCHAR(50) NOT NULL,
@@ -162,9 +165,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`mentor-mentee-matche`
+-- Table `mentee-union`.`mentor_mentee_matche`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor-mentee-matche` (
+CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor_mentee_matche` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `mentor_id` INT NOT NULL,
   `mentee_id` INT NOT NULL,
@@ -189,16 +192,16 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor-mentee-matche` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_mentor-mentee-matches_mento-mentee-session1`
     FOREIGN KEY (`mento-mentee-session_id`)
-    REFERENCES `mentee-union`.`mento-mentee-session` (`id`)
+    REFERENCES `mentee-union`.`mento_mentee_session` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`user-recommend`
+-- Table `mentee-union`.`user_recommend`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`user-recommend` (
+CREATE TABLE IF NOT EXISTS `mentee-union`.`user_recommend` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `giver_id` INT NOT NULL,
   `receiver_id` INT NOT NULL,
@@ -237,6 +240,43 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`interest` (
   INDEX `fk_interest_user1_idx` (`user_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_interest_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`terms`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`terms` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(100) NOT NULL,
+  `content` LONGTEXT NOT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`allow_terms`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`allow_terms` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `terms_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`id`, `terms_id`, `user_id`),
+  INDEX `fk_terms_has_user_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_terms_has_user_terms1_idx` (`terms_id` ASC) VISIBLE,
+  CONSTRAINT `fk_terms_has_user_terms1`
+    FOREIGN KEY (`terms_id`)
+    REFERENCES `mentee-union`.`terms` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_terms_has_user_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
     ON DELETE NO ACTION
