@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar` (
   `content` LONGTEXT NOT NULL,
   `meeting_place` VARCHAR(150) NOT NULL,
   `limit_participant_amount` INT NOT NULL DEFAULT 0,
-  `recruit_start` TIMESTAMP NOT NULL,
-  `recruit_end` TIMESTAMP NOT NULL,
+  `recruit_start_date` TIMESTAMP NOT NULL,
+  `recruit_end_date` TIMESTAMP NOT NULL,
   `seminar_start_date` TIMESTAMP NOT NULL,
   `seminar_end_date` TIMESTAMP NOT NULL,
   `is_recruit_finished` TINYINT NOT NULL DEFAULT 0,
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user_recommend` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`, `giver_id`, `receiver_id`),
-  INDEX `fk_users_has_users_users3_idx` (`receiver_id` ASC) INVISIBLE,
+  INDEX `fk_users_has_users_users3_idx` (`receiver_id` ASC) VISIBLE,
   INDEX `fk_users_has_users_users2_idx` (`giver_id` ASC) VISIBLE,
   CONSTRAINT `fk_users_has_users_users2`
     FOREIGN KEY (`giver_id`)

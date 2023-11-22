@@ -3,6 +3,8 @@ use `mentee-union`;
 show tables;
 select * from user;
 select * from user_recommend;
+select * from category;
+select * from seminar;
 
 select count(*),sum(points)from user_recommend where giver_id=1;
 
@@ -36,6 +38,18 @@ select * from migrations;
 select * from category where name = 'IT' OR name = '회계';
 
 insert into user_recommend (giver_id, receiver_id, points, reason) values (1,2,6,'그냥');
+insert into seminar (host_id, category_id, title, content, meeting_place, limit_participant_amount, recruit_start_date, recruit_end_date, seminar_start_date, seminar_end_date) values (
+  1,
+  2,
+  'test',
+  'test conteent',
+  'seoul',
+  5,
+  '2023-11-23',
+  '2023-11-23',
+  '2023-12-12',
+  '2023-12-12'
+);
 
 update user set points=0;
 
