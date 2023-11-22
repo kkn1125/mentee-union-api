@@ -4,12 +4,6 @@ import { QueryFailedErrors } from 'types/global';
 
 @Injectable()
 export class ApiResponseService {
-  // ok?: boolean = true;
-  // code?: number = 200;
-  // data?: any;
-  // message?: string;
-  // detail?: number|string|(number|string)[];
-
   output({
     ok = true,
     code = 200,
@@ -23,11 +17,6 @@ export class ApiResponseService {
     message?: string;
     detail?: number | string | (number | string)[];
   }) {
-    // console.log('서비스', data);
-    // Object.assign(this, datas);
-    // const { ok, code, data, message, detail } = this;
-    // console.log('서비스 데이터', data);
-    // console.log('서비스 메세지', message);
     if (detail instanceof Array) {
       return {
         ok,
@@ -47,19 +36,47 @@ export class ApiResponseService {
     }
   }
 
-  // static EXCEPTION(
-  //   message: string,
-  //   kindOfExceptionStatus: HttpStatus,
-  //   details?: number|string|(number|string)[],
-  // ) {
-  //   if (details) {
-  //     throw new HttpException(message, kindOfExceptionStatus, {
-  //       cause: details,
-  //     });
-  //   } else {
-  //     throw new HttpException(message, kindOfExceptionStatus);
-  //   }
-  // }
+  static EXCEPTION(
+    errorType: HttpStatus,
+    message: string,
+    details?: number | string | (number | string)[],
+  ): void;
+  static EXCEPTION(
+    errorType: HttpStatus,
+    errorOrMessage: any,
+    messageOrDetails?: number | string | (number | string)[],
+    details?: number | string | (number | string)[],
+  ): void;
+  static EXCEPTION(
+    errorType: HttpStatus,
+    errorOrMessage: any,
+    messageOrDetails?: number | string | (number | string)[],
+    details?: number | string | (number | string)[],
+  ) {
+    if (errorOrMessage instanceof QueryFailedError) {
+      return new HttpException(
+        (errorOrMessage as QueryFailedErrors).code,
+        errorType,
+        {
+          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
+        },
+      );
+    } else {
+      if (typeof errorOrMessage === 'string' && details === undefined) {
+        return new HttpException(errorOrMessage, errorType, {
+          cause: messageOrDetails,
+        });
+      } else {
+        return new HttpException(
+          messageOrDetails || errorOrMessage.code,
+          errorType,
+          {
+            cause: details,
+          },
+        );
+      }
+    }
+  }
 
   static BAD_REQUEST(message: string, details?: string | string[]): void;
   static BAD_REQUEST(
@@ -72,29 +89,12 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.BAD_REQUEST,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.BAD_REQUEST, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.BAD_REQUEST,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.BAD_REQUEST,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
   static NOT_FOUND(
     message: string,
@@ -110,29 +110,12 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.NOT_FOUND,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.NOT_FOUND, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.NOT_FOUND,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.NOT_FOUND,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
   static FORBIDDEN(
     message: string,
@@ -148,29 +131,12 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.FORBIDDEN,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.FORBIDDEN, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.FORBIDDEN,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.FORBIDDEN,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
   static UNAUTHORIZED(
     message: string,
@@ -186,29 +152,12 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.UNAUTHORIZED,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.UNAUTHORIZED, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.UNAUTHORIZED,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.UNAUTHORIZED,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
   static SUCCESS(
     message: string,
@@ -224,29 +173,12 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.OK,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.OK, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.OK,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.OK,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
   static CREATED(
     message: string,
@@ -262,29 +194,12 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.CREATED,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.CREATED, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.CREATED,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.CREATED,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
   static CONFLICT(
     message: string,
@@ -300,28 +215,11 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    if (errorOrMessage instanceof QueryFailedError) {
-      throw new HttpException(
-        (errorOrMessage as QueryFailedErrors).code,
-        HttpStatus.CONFLICT,
-        {
-          cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
-        },
-      );
-    } else {
-      if (typeof errorOrMessage === 'string' && details === undefined) {
-        throw new HttpException(errorOrMessage, HttpStatus.CONFLICT, {
-          cause: messageOrDetails,
-        });
-      } else {
-        throw new HttpException(
-          messageOrDetails || errorOrMessage.code,
-          HttpStatus.CONFLICT,
-          {
-            cause: details,
-          },
-        );
-      }
-    }
+    throw this.EXCEPTION(
+      HttpStatus.CONFLICT,
+      errorOrMessage,
+      messageOrDetails,
+      details,
+    );
   }
 }
