@@ -3,10 +3,16 @@ use `mentee-union`;
 show tables;
 select * from user;
 select * from user_recommend;
+select * from seminar_participant;
 select * from category;
 select * from seminar;
 
-select count(*),sum(points)from user_recommend where giver_id=1;
+SELECT 
+    COUNT(*), SUM(points)
+FROM
+    user_recommend
+WHERE
+    giver_id = 1;
 
 set @target_id=2;
 
