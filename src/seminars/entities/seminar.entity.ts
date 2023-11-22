@@ -4,9 +4,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { SeminarParticipant } from './seminar-participant.entity';
 
 @Entity()
 export class Seminar extends BaseEntity {
@@ -57,4 +59,10 @@ export class Seminar extends BaseEntity {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @OneToMany(
+    () => SeminarParticipant,
+    (seminarParticipant) => seminarParticipant.seminar,
+  )
+  seminarParticipants: SeminarParticipant[];
 }
