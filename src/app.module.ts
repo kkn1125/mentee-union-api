@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { LoggerModule } from './logger/logger.module';
 import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
     ForumsModule,
     LoggerModule,
     AuthModule,
+    MailerModule,
   ],
   controllers: [],
   providers: [],
