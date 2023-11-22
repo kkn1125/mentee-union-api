@@ -1,20 +1,14 @@
-import { Module } from '@nestjs/common';
-import { MailerService } from './mailer.service';
-import { MailerController } from './mailer.controller';
-import { ConfigModule } from '@nestjs/config';
 import mailerConfig from '@/config/mailer.config';
-import { UsersService } from '@/users/users.service';
+import { UsersModule } from '@/users/users.module';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MailerController } from './mailer.controller';
 import { MailerPage } from './mailer.page';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '@/users/entities/user.entity';
-import { UserRecommend } from '@/users/entities/user-recommend.entity';
+import { MailerService } from './mailer.service';
 
 @Module({
-  imports: [
-    ConfigModule.forFeature(mailerConfig),
-    TypeOrmModule.forFeature([User, UserRecommend]),
-  ],
+  imports: [ConfigModule.forFeature(mailerConfig), UsersModule],
   controllers: [MailerController],
-  providers: [MailerService, UsersService, MailerPage],
+  providers: [MailerService, MailerPage],
 })
 export class MailerModule {}
