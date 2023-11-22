@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsDate, IsNotEmpty, Matches, MinLength } from 'class-validator';
+import {
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()

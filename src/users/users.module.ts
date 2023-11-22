@@ -18,5 +18,6 @@ import { UserRecommend } from './entities/user-recommend.entity';
   ],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

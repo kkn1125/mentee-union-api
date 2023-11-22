@@ -60,7 +60,16 @@ export class UsersController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('id') id: string,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        stopAtFirstError: true,
+      }),
+    )
+    updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.update(+id, updateUserDto);
   }
 

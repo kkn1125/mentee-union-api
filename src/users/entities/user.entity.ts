@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRecommend } from './user-recommend.entity';
+import { SeminarParticipant } from '@/seminars/entities/seminar-participant.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -43,6 +44,9 @@ export class User extends BaseEntity {
   points: number;
 
   @Column()
+  fail_login_count: number;
+
+  @Column()
   last_login_at: Date;
 
   /* 
@@ -71,4 +75,10 @@ export class User extends BaseEntity {
   // receiver: User[];
   // @ManyToMany(() => User, (user) => user.receiver)
   // giver: User[];
+
+  @OneToMany(
+    () => SeminarParticipant,
+    (seminarParticipant) => seminarParticipant.user,
+  )
+  seminarParticipants: SeminarParticipant[];
 }

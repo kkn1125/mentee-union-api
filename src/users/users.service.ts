@@ -21,6 +21,10 @@ export class UsersService {
     private readonly configService: ConfigService,
   ) {}
 
+  getRepository() {
+    return this.userRepository;
+  }
+
   async create(createUserDto: CreateUserDto) {
     const qr = this.userRepository.manager.connection.createQueryRunner();
 
@@ -34,7 +38,10 @@ export class UsersService {
         ],
       });
 
-      createUserDto.password = this.encodePassword(createUserDto.password);
+      createUserDto.password = this.encodingPassword(
+        createUserDto.email,
+        createUserDto.password,
+      );
 
       const dto = await this.userRepository.save(createUserDto, {
         transaction: true,
@@ -78,6 +85,10 @@ export class UsersService {
 
   findOne(id: number) {
     return this.userRepository.findOne({ where: { id } });
+  }
+
+  findOneByUsername(username: string) {
+    return this.userRepository.findOne({ where: { username } });
   }
 
   findOneByEmail(email: string) {
@@ -236,8 +247,23 @@ export class UsersService {
     }
   }
 
-  encodePassword(password: string) {
-    const privkey = this.configService.get<string>('encode.privkey');
-    return cryptoJS.HmacSHA256(password, privkey).toString(cryptoJS.enc.Hex);
+  // encodePassword(password: string) {
+  //   const privkey = this.configService.get<string>('encode.privkey');
+  //   return cryptoJS.HmacSHA256(password, privkey).toString(cryptoJS.enc.Hex);
+  // }
+
+  encodingPassword(email: string, password: string) {
+    const encodeKey = this.configService.get<string>('encode.privkey');
+    return cryptoJS.HmacSHA256(password + '|' + email, encodeKey).toString();
+  }
+
+  comparePassword(
+    encodedPassword: string,
+    compareEmail: string,
+    comparePassword: string,
+  ) {
+    const compare = this.encodingPassword(compareEmail, comparePassword);
+
+    return encodedPassword === compare;
   }
 }
