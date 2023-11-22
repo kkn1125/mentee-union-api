@@ -32,10 +32,10 @@ export class Seminar extends BaseEntity {
   limit_participant_amount: number;
 
   @Column()
-  recruit_start: Date;
+  recruit_start_date: Date;
 
   @Column()
-  recruit_end: Date;
+  recruit_end_date: Date;
 
   @Column()
   seminar_start_date: Date;

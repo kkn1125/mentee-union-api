@@ -46,6 +46,7 @@ export class SeminarsService {
 
     await qr.startTransaction();
     try {
+      await this.seminarRepository.findOneOrFail({ where: { id } });
       const dto = await this.seminarRepository.update(id, updateSeminarDto);
       await qr.commitTransaction();
       await qr.release();
