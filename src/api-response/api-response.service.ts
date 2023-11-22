@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
-import { QueryFailedErrors } from 'types/global';
+import { EntityNotFoundError, QueryFailedError } from 'typeorm';
+import { EntityNotFoundErrors, QueryFailedErrors } from 'types/global';
 
 @Injectable()
 export class ApiResponseService {
@@ -53,6 +53,7 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
+    // console.log('errorOrMessage', Object.keys(errorOrMessage));
     if (errorOrMessage instanceof QueryFailedError) {
       return new HttpException(
         (errorOrMessage as QueryFailedErrors).code,
@@ -61,6 +62,11 @@ export class ApiResponseService {
           cause: (errorOrMessage as QueryFailedErrors).sqlMessage,
         },
       );
+    } else if (errorOrMessage instanceof EntityNotFoundError) {
+      /* 404 분기 추가 2023-11-23 02:38:34 */
+      return new HttpException('not found', HttpStatus.NOT_FOUND, {
+        cause: messageOrDetails,
+      });
     } else {
       if (typeof errorOrMessage === 'string' && details === undefined) {
         return new HttpException(errorOrMessage, errorType, {
