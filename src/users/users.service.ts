@@ -58,7 +58,21 @@ export class UsersService {
 
   findAll() {
     return this.userRepository.find({
-      select: [],
+      select: [
+        'id',
+        'username',
+        'email',
+        'phone_number',
+        'birth',
+        'gender',
+        'level',
+        'points',
+        'last_login_at',
+        'status',
+        'deleted_at',
+        'created_at',
+        'updated_at',
+      ],
     });
   }
 
@@ -66,58 +80,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  // async givePoints(givePointsDto: GivePointsDto) {
-  //   const userQr = this.userRepository.manager.connection.createQueryRunner();
-  //   const userRecommendQr =
-  //     this.userRecommendRepository.manager.connection.createQueryRunner();
+  findOneByEmail(email: string) {
+    return this.userRepository.findOne({ where: { email } });
+  }
 
-  //   const giverId = givePointsDto.giver_id;
-  //   const receiverId = givePointsDto.receiver_id;
-  //   const addPoints = givePointsDto.points;
-
-  //   await userQr.startTransaction();
-  //   try {
-  //     const giverObj = await this.userRepository.findOne({
-  //       where: { id: giverId },
-  //     });
-  //     const receiverObj = await this.userRepository.findOne({
-  //       where: { id: receiverId },
-  //     });
-
-  //     /* giver 추천 점수 */
-  //     giverObj.points += 1;
-  //     await this.userRepository.save(giverObj, {
-  //       transaction: true,
-  //     });
-
-  //     /* receiver 받은 점수 */
-  //     receiverObj.points += +addPoints;
-  //     await this.userRepository.save(receiverObj, { transaction: true });
-  //     await userQr.commitTransaction();
-  //     await userQr.release();
-  //   } catch (error) {
-  //     await userQr.rollbackTransaction();
-  //     await userQr.release();
-  //     ApiResponseService.BAD_REQUEST('fail save giver, receiver data');
-  //   }
-
-  //   await userRecommendQr.startTransaction();
-  //   try {
-  //     /* give session 저장 */
-  //     await this.userRecommendRepository.save(givePointsDto, {
-  //       transaction: true,
-  //     });
-  //     await userRecommendQr.commitTransaction();
-  //     await userRecommendQr.release();
-  //   } catch (error) {
-  //     console.log(error);
-  //     await userRecommendQr.rollbackTransaction();
-  //     await userRecommendQr.release();
-  //     ApiResponseService.BAD_REQUEST('fail save user recommend data');
-  //   }
-
-  //   ApiResponseService.SUCCESS('success give points to receiver');
-  // }
   async givePoints(givePointsDto: GivePointsDto) {
     const userQr = this.userRepository.manager.connection.createQueryRunner();
     const userRecommendQr =
