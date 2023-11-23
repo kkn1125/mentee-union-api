@@ -34,6 +34,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
       namingStrategy: new SnakeNamingStrategy(),
       migrations: [Initialize1700558286023],
       migrationsRun: true,
+      logging: true,
     };
   }
 }
