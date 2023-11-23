@@ -10,5 +10,6 @@ import { MailerService } from './mailer.service';
   imports: [ConfigModule.forFeature(mailerConfig), UsersModule],
   controllers: [MailerController],
   providers: [MailerService, MailerPage],
+  exports: [MailerService],
 })
 export class MailerModule {}

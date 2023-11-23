@@ -10,7 +10,7 @@ type CheckMailType = {
   email: string;
   token: string;
   time: number;
-  resolver: (value: boolean) => void;
+  resolver: (value: string) => void;
   rejecter: (reason: any) => void;
   used: boolean;
 };
@@ -25,7 +25,7 @@ export class MailerService {
   ) {}
 
   async sendAuthMail(email: string) {
-    let resolver: (value: boolean) => void;
+    let resolver: (value: string) => void;
     let rejecter: (reason: any) => void;
     const promise = new Promise((resolve, reject) => {
       resolver = resolve;
@@ -86,14 +86,13 @@ export class MailerService {
       ApiResponseService.NOT_FOUND('email is not exists!', email);
     }
 
+    transforter.close();
+
     try {
-      await promise;
+      return await promise;
     } catch (error) {
       ApiResponseService.BAD_REQUEST(error, 'problem sending mail');
     }
-    transforter.close();
-
-    return result;
   }
 
   async checkEncryptMessage(queryParams: URLSearchParams) {
@@ -102,6 +101,9 @@ export class MailerService {
     const EXPIRED_TIME = 1000 * 30;
     const NOW = +new Date();
     const tokenInfo = checkMailMap.get(paramtoken);
+
+    if (!tokenInfo) return 'token no exists';
+
     // const emailInfo = checkMailMap.get(token);
     let tokenStack = null;
     let flag: string = '';
@@ -119,6 +121,7 @@ export class MailerService {
     }
     const hasTokenInServer = checkMailMap.has(paramtoken);
     const availableToken = checkMailMap.has(tokenStack);
+
     const { email, token, /* time, */ resolver, rejecter } = tokenInfo;
 
     if (hasTokenInServer) {
@@ -132,7 +135,7 @@ export class MailerService {
         if (user) {
           console.log('found user!');
           flag = 'success';
-          resolver(true);
+          resolver(flag);
           checkMailMap.set(token, Object.assign(tokenInfo, { used: true }));
         } else {
           flag = 'not found user';
