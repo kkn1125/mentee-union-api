@@ -14,13 +14,26 @@ import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@/mailer/mailer.service';
+import { CheckEmailPipe } from './pipe/check-email.pipe';
 
 @Controller('users')
 export class UsersController {
   constructor(
+    private readonly mailerService: MailerService,
     private readonly usersService: UsersService,
     private readonly logger: LoggerService,
   ) {}
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(+id);
+  }
 
   @Post()
   create(
@@ -36,6 +49,27 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        stopAtFirstError: true,
+      }),
+    )
+    updateUserDto: UpdateUserDto,
+  ) {
+    await this.usersService.update(+id, updateUserDto);
+    ApiResponseService.SUCCESS('success');
+  }
+
+  @Delete(':id(\\d+)')
+  async remove(@Param('id') id: string) {
+    await this.usersService.softRemove(+id);
+    ApiResponseService.SUCCESS('success');
+  }
+
   @Post('user-points')
   userPoints(
     @Body(
@@ -49,35 +83,16 @@ export class UsersController {
     return this.usersService.givePoints(givePointsDto);
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body(
-      new ValidationPipe({
-        transform: true,
-        stopAtFirstError: true,
-      }),
-    )
-    updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    const result = this.usersService.softRemove(+id);
-    if (result) {
-      ApiResponseService.SUCCESS('success');
+  @Delete('dormant')
+  async restore(@Body('email', CheckEmailPipe) email: string) {
+    console.log('email', email);
+    const flag = await this.mailerService.sendAuthMail(email);
+    console.log(flag);
+    if (flag === 'success') {
+      await this.usersService.restoreDormantAccount(email);
+      ApiResponseService.SUCCESS('success restore dormant account');
+    } else {
+      ApiResponseService.BAD_REQUEST(flag);
     }
   }
 }

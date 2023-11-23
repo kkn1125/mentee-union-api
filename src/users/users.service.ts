@@ -9,7 +9,6 @@ import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserRecommend } from './entities/user-recommend.entity';
-import { QueryFailedErrors } from 'types/global';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +22,38 @@ export class UsersService {
 
   getRepository() {
     return this.userRepository;
+  }
+
+  findAll() {
+    return this.userRepository.find({
+      select: [
+        'id',
+        'username',
+        'email',
+        'phone_number',
+        'birth',
+        'gender',
+        'level',
+        'points',
+        'last_login_at',
+        'status',
+        'deleted_at',
+        'created_at',
+        'updated_at',
+      ],
+    });
+  }
+
+  findOne(id: number) {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  findOneByUsername(username: string) {
+    return this.userRepository.findOne({ where: { username } });
+  }
+
+  findOneByEmail(email: string) {
+    return this.userRepository.findOne({ where: { email } });
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -61,38 +92,6 @@ export class UsersService {
         ApiResponseService.BAD_REQUEST('user create was rollback.');
       }
     }
-  }
-
-  findAll() {
-    return this.userRepository.find({
-      select: [
-        'id',
-        'username',
-        'email',
-        'phone_number',
-        'birth',
-        'gender',
-        'level',
-        'points',
-        'last_login_at',
-        'status',
-        'deleted_at',
-        'created_at',
-        'updated_at',
-      ],
-    });
-  }
-
-  findOne(id: number) {
-    return this.userRepository.findOne({ where: { id } });
-  }
-
-  findOneByUsername(username: string) {
-    return this.userRepository.findOne({ where: { username } });
-  }
-
-  findOneByEmail(email: string) {
-    return this.userRepository.findOne({ where: { email } });
   }
 
   async givePoints(givePointsDto: GivePointsDto) {
@@ -265,5 +264,17 @@ export class UsersService {
     const compare = this.encodingPassword(compareEmail, comparePassword);
 
     return encodedPassword === compare;
+  }
+
+  async restoreDormantAccount(email: string) {
+    try {
+      const user = await this.userRepository.findOneOrFail({
+        where: { email },
+      });
+      await this.userRepository.restore({ id: user.id });
+      return true;
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, 'user not found');
+    }
   }
 }

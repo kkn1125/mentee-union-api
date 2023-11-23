@@ -8,6 +8,8 @@ import { LoggerModule } from '@/logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
 import encodeConfig from '@/config/encode.config';
 import { UserRecommend } from './entities/user-recommend.entity';
+import { MailerModule } from '@/mailer/mailer.module';
+import { MailerService } from '@/mailer/mailer.service';
 
 @Module({
   imports: [
@@ -17,7 +19,7 @@ import { UserRecommend } from './entities/user-recommend.entity';
     LoggerModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, MailerService],
   exports: [UsersService],
 })
 export class UsersModule {}
