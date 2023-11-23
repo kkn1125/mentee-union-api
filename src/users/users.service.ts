@@ -44,8 +44,12 @@ export class UsersService {
     });
   }
 
-  findOne(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    try {
+      return await this.userRepository.findOne({ where: { id } });
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, `not found user ${id}`);
+    }
   }
 
   findOneByUsername(username: string) {

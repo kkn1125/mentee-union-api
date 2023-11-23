@@ -35,9 +35,13 @@ export class SeminarsService {
     });
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     // return `This action returns a #${id} seminar`;
-    return this.seminarRepository.findOne({ where: { id } });
+    try {
+      return await this.seminarRepository.findOne({ where: { id } });
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, `not found seminar ${id}`);
+    }
   }
 
   async create(createSeminarDto: CreateSeminarDto) {
