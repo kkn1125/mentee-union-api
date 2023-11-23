@@ -47,14 +47,14 @@ export class SeminarsController {
     return this.seminarsService.findInvolvedSeminars(req.user.userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(':id(\\d+)')
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.seminarsService.findOne(+id);
   }
 
-  @Put(':id')
+  @Put(':id(\\d+)')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body(
       UpdatePipe,
       new ValidationPipe({
@@ -69,7 +69,7 @@ export class SeminarsController {
   }
 
   @Delete(':id(\\d+)')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.seminarsService.remove(+id);
   }
 
