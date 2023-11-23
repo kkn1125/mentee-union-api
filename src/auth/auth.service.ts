@@ -32,7 +32,7 @@ export class AuthService {
 
     const userQr = this.userRepository.manager.connection.createQueryRunner();
 
-    console.log(user);
+    // console.log(user);
 
     if (user === null) {
       // not found exception
