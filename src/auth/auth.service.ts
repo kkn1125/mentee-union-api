@@ -112,24 +112,17 @@ export class AuthService {
     }
   }
 
-  async signOut(token: string) {
+  async signOut(id: number) {
     const qr = this.userRepository.manager.connection.createQueryRunner();
     await qr.startTransaction();
     try {
-      const verified = this.jwtService.verify(token, {
-        ignoreNotBefore: true,
-        secret: this.configService.get<string>('jwt.privkey'),
+      await this.userRepository.update(+id, {
+        status: 'logout',
       });
-
-      if (verified) {
-        await this.userRepository.update(verified.userId, {
-          status: 'logout',
-        });
-      }
       await qr.commitTransaction();
       await qr.release();
 
-      return verified;
+      return true;
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();

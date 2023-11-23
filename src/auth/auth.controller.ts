@@ -40,8 +40,7 @@ export class AuthController {
   @Post('signout')
   @HttpCode(200)
   signout(@Request() req) {
-    const token = req.headers.authorization.split(' ')[1];
-    const result = this.authService.signOut(token);
+    const result = this.authService.signOut(req.user.userId);
     return !!result;
   }
 }
