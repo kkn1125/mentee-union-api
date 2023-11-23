@@ -274,6 +274,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOneOrFail({
         where: { email },
+        withDeleted: true,
       });
       await this.userRepository.restore({ id: user.id });
       return true;

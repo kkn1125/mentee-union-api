@@ -124,6 +124,17 @@ export class SeminarsService {
   }
 
   async restoreJoinSeminar(seminarParticipant: SeminarParticipant) {
+    try {
+      await this.seminarRepository.findOneOrFail({
+        where: { id: seminarParticipant.id },
+        withDeleted: true,
+      });
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(
+        error,
+        `not found seminar ${seminarParticipant.id}`,
+      );
+    }
     await this.seminarParticipantRepository.restore({
       id: seminarParticipant.id,
     });
