@@ -15,12 +15,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: any) {
+    /* timezone 맞추기 */
+    const lastSignInDateWithTimezon = new Date(payload.last_sign_in);
+    lastSignInDateWithTimezon.setHours(
+      lastSignInDateWithTimezon.getHours() + 9,
+    );
     return {
       userId: payload.sub,
       username: payload.username,
       email: payload.email,
       phone_number: payload.phone_number,
-      role: payload.role,
+      last_sign_in: lastSignInDateWithTimezon,
     };
   }
 }
