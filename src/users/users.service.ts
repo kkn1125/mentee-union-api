@@ -219,7 +219,7 @@ export class UsersService {
     await qr.startTransaction();
 
     try {
-      await this.userRepository.delete(id);
+      await this.userRepository.softDelete({ id });
       await qr.commitTransaction();
       await qr.release();
       return true;
@@ -235,7 +235,7 @@ export class UsersService {
     await qr.startTransaction();
 
     try {
-      await this.userRepository.softDelete(id);
+      await this.userRepository.softDelete({ id });
       await qr.commitTransaction();
       await qr.release();
       return true;
