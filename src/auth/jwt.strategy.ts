@@ -4,6 +4,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 // import { Strategy } from 'passport-local';
 
+export interface JwtDto {
+  userId: number;
+  username: string;
+  email: string;
+  phone_number: string;
+  last_sign_in: Date;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private configService: ConfigService) {
