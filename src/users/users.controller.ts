@@ -85,9 +85,9 @@ export class UsersController {
 
   @Delete('dormant')
   async restore(@Body('email', CheckEmailPipe) email: string) {
-    console.log('email', email);
+    // console.log('email', email);
     const flag = await this.mailerService.sendAuthMail(email);
-    console.log(flag);
+    // console.log(flag);
     if (flag === 'success') {
       await this.usersService.restoreDormantAccount(email);
       ApiResponseService.SUCCESS('success restore dormant account');
