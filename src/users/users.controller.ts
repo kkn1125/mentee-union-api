@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   ValidationPipe,
@@ -30,8 +31,8 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(':id(\\d+)')
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(+id);
   }
 
@@ -49,9 +50,9 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Put(':id')
+  @Put(':id(\\d+)')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body(
       new ValidationPipe({
         transform: true,
@@ -65,7 +66,7 @@ export class UsersController {
   }
 
   @Delete(':id(\\d+)')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.softRemove(+id);
     ApiResponseService.SUCCESS('success');
   }
