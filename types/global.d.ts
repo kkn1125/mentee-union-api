@@ -1,3 +1,4 @@
+import { JwtDto } from '@/auth/jwt.strategy';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 
 /* DB 에러 처리 위한 인터페이스 */
@@ -6,5 +7,11 @@ interface Custom {
   sqlMessage: string;
 }
 
-export interface QueryFailedErrors extends QueryFailedError, Custom {}
-export interface EntityNotFoundErrors extends EntityNotFoundError, Custom {}
+export declare global {
+  namespace Express {
+    interface User extends JwtDto {}
+  }
+
+  interface QueryFailedErrors extends QueryFailedError, Custom {}
+  interface EntityNotFoundErrors extends EntityNotFoundError, Custom {}
+}

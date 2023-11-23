@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
-import { EntityNotFoundErrors, QueryFailedErrors } from 'types/global';
 
 @Injectable()
 export class ApiResponseService {

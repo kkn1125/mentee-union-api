@@ -7,7 +7,6 @@ import {
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { ApiResponseService } from './api-response.service';
-import { QueryFailedErrors } from 'types/global';
 
 @Catch()
 export class ApiResponseFilter implements ExceptionFilter {
