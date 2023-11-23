@@ -6,6 +6,7 @@ select * from user_recommend;
 select * from seminar_participant;
 select * from category;
 select * from seminar;
+# update user set email='chaplet01@gmail.com' where id=1;
 
 SELECT 
     COUNT(*), SUM(points)
