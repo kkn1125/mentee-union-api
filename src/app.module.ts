@@ -11,6 +11,7 @@ import { LoggerModule } from './logger/logger.module';
 import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from './mailer/mailer.module';
+import { GradesModule } from './grade/grades.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { MailerModule } from './mailer/mailer.module';
     LoggerModule,
     AuthModule,
     MailerModule,
+    GradesModule,
   ],
   controllers: [],
   providers: [],
