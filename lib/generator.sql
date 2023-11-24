@@ -170,23 +170,43 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `mentee-union`.`channel`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`channel` (
+  `id` INT NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `url` VARCHAR(200) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `mentee-union`.`mentoring_session`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `category_id` INT NOT NULL,
+  `channel_id` INT NOT NULL,
   `topic` VARCHAR(50) NOT NULL,
-  `objective` LONGTEXT NOT NULL,
+  `objective` VARCHAR(100) NOT NULL,
   `format` VARCHAR(30) NOT NULL,
-  `note` TEXT NOT NULL,
+  `note` VARCHAR(200) NOT NULL,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `fk_mento-mentee-session_category1_idx` (`category_id` ASC) VISIBLE,
+  INDEX `fk_mentoring_session_channel1_idx` (`channel_id` ASC) VISIBLE,
   CONSTRAINT `fk_mento-mentee-session_category1`
     FOREIGN KEY (`category_id`)
     REFERENCES `mentee-union`.`category` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_mentoring_session_channel1`
+    FOREIGN KEY (`channel_id`)
+    REFERENCES `mentee-union`.`channel` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
