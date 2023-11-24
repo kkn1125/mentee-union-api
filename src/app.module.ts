@@ -11,7 +11,9 @@ import { LoggerModule } from './logger/logger.module';
 import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from './mailer/mailer.module';
-import { GradesModule } from './grade/grades.module';
+import { GradesModule } from './grades/grades.module';
+import { MentoringSessionModule } from './mentoring-session/mentoring-session.module';
+import { ChannelModule } from './channel/channel.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { GradesModule } from './grade/grades.module';
     AuthModule,
     MailerModule,
     GradesModule,
+    MentoringSessionModule,
+    ChannelModule,
   ],
   controllers: [],
   providers: [],
