@@ -17,11 +17,14 @@ export class MailerController {
   }
 
   @Get('check')
-  async checkEncryptMessage(@Res() res: Response, @Query('q') q: string) {
+  async checkEncryptMessage(
+    @Res({ passthrough: true }) res: Response,
+    @Query('q') q: string,
+  ) {
     const tokenQuery = decodeURIComponent(q);
     const tokenParams = new URLSearchParams(tokenQuery);
-    console.log(tokenQuery && tokenParams);
-    console.log(tokenQuery, tokenParams);
+    // console.log(tokenQuery && tokenParams);
+    // console.log(tokenQuery, tokenParams);
     if (tokenQuery && tokenParams) {
       res.contentType('text/html');
       const isCheckSuccessed =
