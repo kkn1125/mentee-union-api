@@ -1,6 +1,8 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
@@ -12,19 +14,40 @@ import WebSocket from 'ws';
 @WebSocketGateway({
   path: '/channel',
 })
-export class ChannelGateway {
+export class ChannelGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  clients: Map<string, any> = new Map();
+
   constructor(private readonly channelService: ChannelService) {}
+
+  handleConnection(client: any, ...args: any[]) {
+    client['id'] = String(+new Date());
+    this.clients.set(client.id, client);
+  }
+  handleDisconnect(client: any) {
+    console.log('bye', client['id']);
+    delete this.clients[client['id']];
+  }
 
   // @WebSocketServer()
   // server = App();
 
   @SubscribeMessage('findAllChannel')
-  findAll() {
-    // console.log(this);
-    // console.log('test');
-    return {
-      message: this.channelService.findAll(),
-    };
+  findAll(client, data) {
+    console.log(client);
+    console.log(data);
+
+    this.clients.forEach((client) => {
+      client.send(
+        JSON.stringify({
+          message: this.channelService.findAll(),
+        }),
+      );
+    });
+    // return {
+    //   message: this.channelService.findAll(),
+    // };
   }
 
   @SubscribeMessage('findOneChannel')

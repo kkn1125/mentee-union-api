@@ -7,6 +7,7 @@ import { ApiResponseFilter } from './api-response/api-response.filter';
 import { ApiResponseInterceptor } from './api-response/api-response.interceptor';
 import * as Sentry from '@sentry/node';
 import { ProfilingIntegration } from '@sentry/profiling-node';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,6 +17,8 @@ async function bootstrap() {
   const logger = new ConsoleLogger('System');
   const port = configService.get<number>('server.port');
   const dsn = configService.get<string>('server.dns');
+
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   /* sentry settings */
   // dsn 별도로 분리하기
@@ -58,6 +61,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5000',
+      'http://localhost:5173',
       'http://localhost:8080',
     ],
   });

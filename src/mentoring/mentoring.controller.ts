@@ -3,13 +3,13 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
+  // HttpCode,
   Param,
   ParseIntPipe,
   Post,
   Put,
-  Req,
-  Res,
+  // Req,
+  // Res,
 } from '@nestjs/common';
 import { CreateMentoringDto } from './dto/create-mentoring.dto';
 import { UpdateMentoringDto } from './dto/update-mentoring.dto';
@@ -24,19 +24,21 @@ export class MentoringController {
   constructor(private readonly mentoringService: MentoringService) {}
 
   // @Get('test')
-  // @HttpCode(101)
-  // sockettest(@Req() req: Request, @Res() res: Response) {
+  // // @HttpCode(101)
+  // sockettest(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
   //   const magicString = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
   //   const websocketKey = req.headers['sec-websocket-key'];
   //   const shasum = cryptoJS
   //     .SHA1(websocketKey + magicString)
-  //     .toString(cryptoJS.enc.Hex);
+  //     .toString(cryptoJS.enc.Base64);
+  //   console.log(websocketKey);
+  //   console.log(shasum);
 
   //   res.setHeader('Upgrade', 'websocket');
   //   res.setHeader('Connection', 'Upgrade');
   //   res.setHeader('Sec-WebSocket-Accept', shasum);
-  //   res.setHeader('Sec-WebSocket-Version', '13');
-
+  //   // res.setHeader('Sec-WebSocket-Version', '13');
+  //   res.status(101);
   //   res.send('ok');
   //   // return this.mentoringService.findAll();
   // }
