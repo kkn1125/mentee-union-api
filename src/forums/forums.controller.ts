@@ -1,19 +1,18 @@
+import { ApiResponseService } from '@/api-response/api-response.service';
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
   Put,
   ValidationPipe,
-  ParseIntPipe,
 } from '@nestjs/common';
-import { ForumsService } from './forums.service';
 import { CreateForumDto } from './dto/create-forum.dto';
 import { UpdateForumDto } from './dto/update-forum.dto';
-import { ApiResponseService } from '@/api-response/api-response.service';
+import { ForumsService } from './forums.service';
 
 @Controller('forums')
 export class ForumsController {
