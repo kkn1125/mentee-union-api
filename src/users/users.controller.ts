@@ -36,6 +36,26 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
+  @Post('check/username')
+  async checkAlreadyUsedUsername(@Body('username') username: string) {
+    const result = !(await this.usersService.findOneByUsername(username));
+    if (result) {
+      ApiResponseService.SUCCESS('available username');
+    } else {
+      ApiResponseService.CONFLICT('duplicated', username);
+    }
+  }
+
+  @Post('check/email')
+  async checkAlreadyUsedEmail(@Body('email') email: string) {
+    const result = !(await this.usersService.findOneByEmail(email));
+    if (result) {
+      ApiResponseService.SUCCESS('available email');
+    } else {
+      ApiResponseService.CONFLICT('duplicated', email);
+    }
+  }
+
   @Post()
   create(
     @Body(
