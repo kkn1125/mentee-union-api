@@ -1,9 +1,13 @@
 use `mentee-union`;
 
+drop table migrations;
 show tables;
 select * from user;
+desc user;
 select * from user_recommend;
 select * from seminar_participant;
+select * from grade;
+        
 select * from category;
 select * from seminar;
 # update user set email='chaplet01@gmail.com' where id=1;
@@ -43,6 +47,8 @@ select * from category;
 select * from migrations;
 
 select * from category where name = 'IT' OR name = '회계';
+
+insert into user () values ();
 
 insert into user_recommend (giver_id, receiver_id, points, reason) values (1,2,6,'그냥');
 insert into seminar (host_id, category_id, title, content, meeting_place, limit_participant_amount, recruit_start_date, recruit_end_date, seminar_start_date, seminar_end_date) values (

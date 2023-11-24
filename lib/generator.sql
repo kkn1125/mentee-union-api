@@ -17,10 +17,25 @@ CREATE SCHEMA IF NOT EXISTS `mentee-union` DEFAULT CHARACTER SET utf8 ;
 USE `mentee-union` ;
 
 -- -----------------------------------------------------
+-- Table `mentee-union`.`grade`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`grade` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NOT NULL,
+  `description` TEXT NOT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `mentee-union`.`user`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `grade_id` INT NOT NULL,
   `username` VARCHAR(45) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `phone_number` VARCHAR(45) NOT NULL,
@@ -37,7 +52,13 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
-  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE)
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
+  INDEX `fk_user_grade1_idx` (`grade_id` ASC) VISIBLE,
+  CONSTRAINT `fk_user_grade1`
+    FOREIGN KEY (`grade_id`)
+    REFERENCES `mentee-union`.`grade` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -149,9 +170,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`mento_mentee_session`
+-- Table `mentee-union`.`mentoring_session`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`mento_mentee_session` (
+CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `category_id` INT NOT NULL,
   `topic` VARCHAR(50) NOT NULL,
@@ -172,21 +193,21 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`mentor_mentee_matche`
+-- Table `mentee-union`.`mentoring`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor_mentee_matche` (
+CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `mentor_id` INT NOT NULL,
   `mentee_id` INT NOT NULL,
-  `mento-mentee-session_id` INT NOT NULL,
+  `mentoring_session_id` INT NOT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'waiting',
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`, `mentor_id`, `mentee_id`, `mento-mentee-session_id`),
+  PRIMARY KEY (`id`, `mentor_id`, `mentee_id`, `mentoring_session_id`),
   INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC) VISIBLE,
   INDEX `fk_mentor_mentee_matches_mento_mentee_users1_idx` (`mentor_id` ASC) VISIBLE,
-  INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mento-mentee-session_id` ASC) VISIBLE,
+  INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
   CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users1`
     FOREIGN KEY (`mentor_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -198,8 +219,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor_mentee_matche` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_session1`
-    FOREIGN KEY (`mento-mentee-session_id`)
-    REFERENCES `mentee-union`.`mento_mentee_session` (`id`)
+    FOREIGN KEY (`mentoring_session_id`)
+    REFERENCES `mentee-union`.`mentoring_session` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -275,6 +296,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`allow_terms` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `terms_id` INT NOT NULL,
   `user_id` INT NOT NULL,
+  `agree` TINYINT NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`, `terms_id`, `user_id`),
   INDEX `fk_terms_has_user_user1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_terms_has_user_terms1_idx` (`terms_id` ASC) VISIBLE,
