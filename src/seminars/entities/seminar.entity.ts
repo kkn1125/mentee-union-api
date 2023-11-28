@@ -4,11 +4,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SeminarParticipant } from './seminar-participant.entity';
+import { User } from '@/users/entities/user.entity';
 
 @Entity()
 export class Seminar extends BaseEntity {
@@ -65,4 +68,10 @@ export class Seminar extends BaseEntity {
     (seminarParticipant) => seminarParticipant.seminar,
   )
   seminarParticipants: SeminarParticipant[];
+
+  @ManyToOne(() => User, (user) => user.seminar)
+  @JoinColumn({
+    name: 'host_id',
+  })
+  user: User;
 }

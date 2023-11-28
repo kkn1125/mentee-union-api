@@ -24,7 +24,12 @@ export class SeminarsService {
 
   findAll() {
     // return `This action returns all seminars`;
-    return this.seminarRepository.find();
+    return this.seminarRepository.find({
+      relations: {
+        user: true,
+        seminarParticipants: true,
+      },
+    });
   }
 
   findInvolvedSeminars(user_id: number) {
