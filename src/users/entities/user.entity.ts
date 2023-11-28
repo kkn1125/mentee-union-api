@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { UserRecommend } from './user-recommend.entity';
 import { SeminarParticipant } from '@/seminars/entities/seminar-participant.entity';
+import { Seminar } from '@/seminars/entities/seminar.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -84,4 +85,7 @@ export class User extends BaseEntity {
     (seminarParticipant) => seminarParticipant.user,
   )
   seminarParticipants: SeminarParticipant[];
+
+  @OneToMany(() => Seminar, (seminar) => seminar.user)
+  seminar: Seminar;
 }
