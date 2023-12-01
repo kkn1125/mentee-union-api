@@ -70,6 +70,25 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Put('reset')
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    const result = this.mailerService.resetMailMapDeleteByEmail(email, token);
+    if (result === 'success') {
+      await this.usersService.resetPassword(email, password);
+      ApiResponseService.SUCCESS('success reset password');
+    } else if (result === 'token expired') {
+      ApiResponseService.BAD_REQUEST('access denied', 'token expired');
+    } else if (result === 'not matched token') {
+      ApiResponseService.BAD_REQUEST('access denied', 'wrong token');
+    } else {
+      ApiResponseService.BAD_REQUEST('access denied', 'no exists session');
+    }
+  }
+
   @Put(':id(\\d+)')
   async update(
     @Param('id', ParseIntPipe) id: number,

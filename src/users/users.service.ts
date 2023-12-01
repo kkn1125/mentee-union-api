@@ -257,6 +257,33 @@ export class UsersService {
     }
   }
 
+  async resetPassword(email: string, password: string) {
+    const qr = this.userRepository.manager.connection.createQueryRunner();
+    await qr.startTransaction();
+
+    try {
+      const user = await this.findOneByEmail(email);
+      if (user) {
+        const encodedPassword = this.encodingPassword(email, password);
+        await this.update(user.id, {
+          password: encodedPassword,
+          fail_login_count: 0,
+        });
+        await qr.commitTransaction();
+        await qr.release();
+        return true;
+      } else {
+        await qr.commitTransaction();
+        await qr.release();
+        ApiResponseService.NOT_FOUND('user not found', user.id);
+      }
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST(error, 'user soft remove was rollback.');
+    }
+  }
+
   // encodePassword(password: string) {
   //   const privkey = this.configService.get<string>('encode.privkey');
   //   return cryptoJS.HmacSHA256(password, privkey).toString(cryptoJS.enc.Hex);
