@@ -66,7 +66,7 @@ export class UsersController {
     )
     createUserDto: CreateUserDto,
   ) {
-    // this.logger.debug(createUserDto);
+    this.logger.debug(createUserDto);
     return this.usersService.create(createUserDto);
   }
 

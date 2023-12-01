@@ -32,12 +32,17 @@ export class User extends BaseEntity {
   @Column()
   birth: Date;
 
+  /* 0: male, 1: female, 2: none */
   @Column()
-  gender: string;
+  gender: number;
 
   /* 해시 처리된 패스워드 */
   @Column()
   password: string;
+
+  /* 해시 처리된 패스워드 */
+  @Column()
+  auth_email: boolean;
 
   /* 레벨 (레벨 테이블 별도로 구성 필요) */
   @Column()

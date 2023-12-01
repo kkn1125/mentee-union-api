@@ -28,13 +28,16 @@ export class UsersService {
     return this.userRepository.find({
       select: [
         'id',
+        'grade_id',
         'username',
         'email',
+        'auth_email',
         'phone_number',
         'birth',
         'gender',
         'level',
         'points',
+        'fail_login_count',
         'last_login_at',
         'status',
         'deleted_at',
@@ -62,6 +65,10 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const qr = this.userRepository.manager.connection.createQueryRunner();
+
+    if (!createUserDto.auth_email) {
+      ApiResponseService.UNAUTHORIZED('invalid', 'required auth email');
+    }
 
     await qr.startTransaction();
 

@@ -10,6 +10,13 @@ import {
 
 export class CreateUserDto {
   @IsNotEmpty()
+  auth_email: boolean;
+
+  @IsNotEmpty()
+  @IsNumber()
+  grade_id: number;
+
+  @IsNotEmpty()
   @MinLength(2)
   username: string;
 
@@ -26,7 +33,8 @@ export class CreateUserDto {
   birth: Date;
 
   @IsNotEmpty()
-  gender: string;
+  @IsNumber()
+  gender: number;
 
   @IsNotEmpty()
   password: string;

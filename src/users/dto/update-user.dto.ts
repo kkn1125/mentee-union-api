@@ -1,7 +1,7 @@
 import { IntersectionType, PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsDate, IsString } from 'class-validator';
+import { IsNumber, IsDate, IsString, IsBoolean } from 'class-validator';
 
 class UpdateAdditionalUserDto {
   @IsNumber()
@@ -14,6 +14,10 @@ class UpdateAdditionalUserDto {
 
   @IsString()
   status: string;
+
+  @IsBoolean()
+  @Transform(({ value }) => (value === 'false' ? false : Boolean(value)))
+  auth_email: boolean;
 }
 
 export class UpdateUserDto extends PartialType(
