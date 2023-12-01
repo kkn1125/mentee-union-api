@@ -55,6 +55,39 @@ export class UsersService {
     }
   }
 
+  async findOneProfile(id: number) {
+    try {
+      return await this.userRepository.findOne({
+        where: { id },
+        select: [
+          'id',
+          'grade_id',
+          'username',
+          'email',
+          'phone_number',
+          'birth',
+          'gender',
+          'auth_email',
+          'level',
+          'points',
+          'fail_login_count',
+          'last_login_at',
+          'status',
+          'deleted_at',
+          'created_at',
+          'updated_at',
+        ],
+        relations: {
+          seminar: true,
+          seminarParticipants: true,
+          givers: true,
+          receivers: true,
+          grade: true,
+        },
+      });
+    } catch (error) {}
+  }
+
   findOneByUsername(username: string) {
     return this.userRepository.findOne({ where: { username } });
   }

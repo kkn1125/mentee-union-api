@@ -36,6 +36,11 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
+  @Get('profile/:id(\\d+)')
+  findOneProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOneProfile(+id);
+  }
+
   @Post('check/username')
   async checkAlreadyUsedUsername(@Body('username') username: string) {
     const result = !(await this.usersService.findOneByUsername(username));

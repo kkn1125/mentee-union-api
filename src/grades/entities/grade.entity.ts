@@ -1,9 +1,11 @@
+import { User } from '@/users/entities/user.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -28,4 +30,7 @@ export class Grade extends BaseEntity {
 
   @UpdateDateColumn()
   updated_at: string;
+
+  @OneToMany(() => User, (user) => user.grade)
+  users: User[];
 }

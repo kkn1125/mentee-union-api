@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,6 +12,7 @@ import {
 import { UserRecommend } from './user-recommend.entity';
 import { SeminarParticipant } from '@/seminars/entities/seminar-participant.entity';
 import { Seminar } from '@/seminars/entities/seminar.entity';
+import { Grade } from '@/grades/entities/grade.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -75,6 +77,9 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @ManyToOne(() => Grade, (grade) => grade.users)
+  grade: Grade;
 
   @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.giver)
   givers: User[];
