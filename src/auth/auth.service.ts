@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 @Injectable()
 export class AuthService {
   private readonly TRY_SIGN_IN_FAIL_LIMIT_COUNT = 5;
@@ -39,14 +40,28 @@ export class AuthService {
       ApiResponseService.NOT_FOUND('user not found');
     }
 
+    if (!user.auth_email) {
+      // not found exception
+      ApiResponseService.BAD_REQUEST('email authentication required');
+    }
+
     const comparedPassword = this.usersService.comparePassword(
       user.password,
       email,
       password,
     );
 
+    // if (user.fail_login_count >= this.TRY_SIGN_IN_FAIL_LIMIT_COUNT) {
+    //   const updated = new Date(user.updated_at);
+    //   updated.setMinutes(updated.getMinutes() + 10);
+    //   const isAfter = new Date();
+    //   if (isAfter > updated) {
+    //     await this.usersService.update(user.id, { fail_login_count: 0 });
+    //   }
+    // }
+
     /* 로그인 실패 초과 시 */
-    if (user.fail_login_count > this.TRY_SIGN_IN_FAIL_LIMIT_COUNT) {
+    if (user.fail_login_count >= this.TRY_SIGN_IN_FAIL_LIMIT_COUNT) {
       ApiResponseService.BAD_REQUEST(
         'You have exceeded the maximum number of login attempts. Please try again later.',
       );
@@ -65,6 +80,7 @@ export class AuthService {
         if (result === null) {
           ApiResponseService.BAD_REQUEST('fail update user info.');
         }
+
         ApiResponseService.BAD_REQUEST(
           'Incorrect email or password. You have n attempts left. Please try again.',
           this.TRY_SIGN_IN_FAIL_LIMIT_COUNT - triedCount,
@@ -109,6 +125,19 @@ export class AuthService {
           refresh_token: refreshToken,
         };
       }
+    }
+  }
+
+  async updatePassword(email: string, newPassword: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    if (user) {
+      const encryptedNewPassword = this.usersService.encodingPassword(
+        email,
+        newPassword,
+      );
+      await this.usersService.update(user.id, {
+        password: encryptedNewPassword,
+      });
     }
   }
 
