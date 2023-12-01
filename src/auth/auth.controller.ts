@@ -1,3 +1,4 @@
+import { LoggerService } from '@/logger/logger.service';
 import {
   Body,
   Controller,
@@ -9,11 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { SigninDto } from './dto/signin.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
-import { LoggerService } from '@/logger/logger.service';
-import { SigninDto } from './dto/signin.dto';
-import { ApiResponseService } from '@/api-response/api-response.service';
 
 @Controller('auth')
 export class AuthController {
@@ -30,22 +29,22 @@ export class AuthController {
     return this.authService.signIn(signinDto.email, signinDto.password);
   }
 
-  @UseGuards(LocalAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @Post('update')
-  updatePassword(
-    @Body('session') session: string,
-    @Body('email') email: string,
-    @Body('new_password') newPassword: string,
-  ) {
-    this.logger.debug('updateAuthDto', newPassword);
+  // @UseGuards(LocalAuthGuard)
+  // @HttpCode(HttpStatus.OK)
+  // @Post('update')
+  // updatePassword(
+  //   @Body('session') session: string,
+  //   @Body('email') email: string,
+  //   @Body('new_password') newPassword: string,
+  // ) {
+  //   this.logger.debug('updateAuthDto', newPassword);
 
-    if (session === 'auth-update') {
-      return this.authService.updatePassword(email, newPassword);
-    } else {
-      ApiResponseService.FORBIDDEN('not allowed access');
-    }
-  }
+  //   if (session === 'auth-update') {
+  //     return this.authService.updatePassword(email, newPassword);
+  //   } else {
+  //     ApiResponseService.FORBIDDEN('not allowed access');
+  //   }
+  // }
 
   // @UseGuards(AuthGuard)
   @UseGuards(JwtAuthGuard)
