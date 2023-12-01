@@ -26,7 +26,8 @@ export class MailerPage {
   success(): MailFormat {
     return {
       title: '✅ Check Success!',
-      content: '인증이 완료되었습니다. 아래 닫기를 눌러 창을 닫아주세요.',
+      content:
+        '인증이 완료되었습니다. 작업 페이지로 돌아가 나머지 작업을 완료해주세요.<br />아래 닫기를 눌러 창을 닫아주세요.',
       href: 'javascript:void',
       onclick: 'closing()',
       closeBtnText: '닫기',
@@ -50,10 +51,10 @@ export class MailerPage {
       closeBtnText: '닫기',
     };
   }
-  hasNotUserEmail(): MailFormat {
+  alreadyUsedEmail(): MailFormat {
     return {
       title: '❌ Check Fail!',
-      content: '회원 이메일이 아닙니다.',
+      content: '이미 사용 중인 이메일 입니다. 다른 이메일을 사용해주세요.',
       href: 'javascript:void',
       onclick: 'closing()',
       closeBtnText: '닫기',
@@ -98,8 +99,8 @@ export class MailerPage {
       case 'expired':
         return this.format(this.tokenExpired());
 
-      case 'not found user':
-        return this.format(this.hasNotUserEmail());
+      case 'already used email':
+        return this.format(this.alreadyUsedEmail());
 
       case 'invalid token format':
         return this.format(this.invalidFormat());
