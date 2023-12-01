@@ -9,6 +9,9 @@ import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserRecommend } from './entities/user-recommend.entity';
+import * as fs from 'fs';
+import * as path from 'path';
+import { Profile } from './entities/profile.entity';
 
 @Injectable()
 export class UsersService {
@@ -83,6 +86,7 @@ export class UsersService {
           givers: true,
           receivers: true,
           grade: true,
+          profiles: true,
         },
       });
     } catch (error) {}
@@ -314,6 +318,56 @@ export class UsersService {
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'user soft remove was rollback.');
+    }
+  }
+
+  async updateProfile(id: number, profile: Express.Multer.File) {
+    const uploadProfilePath = 'storage/upload/profile';
+    try {
+      fs.readdirSync(path.join(path.resolve(), uploadProfilePath));
+    } catch (error) {
+      fs.mkdirSync(path.join(path.resolve(), uploadProfilePath));
+    }
+
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      ApiResponseService.NOT_FOUND('user not found', id);
+    }
+
+    try {
+      fs.writeFileSync(
+        path.join(uploadProfilePath, profile.originalname),
+        profile.buffer,
+      );
+    } catch (error) {
+      ApiResponseService.BAD_REQUEST('error creating profile file');
+      return;
+    }
+
+    const qr = this.userRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+
+    try {
+      const newProfile = new Profile();
+
+      newProfile.origin_name = profile.originalname;
+      newProfile.new_name = '';
+
+      if (!user.profiles) {
+        user.profiles = [];
+      }
+
+      user.profiles.push(newProfile);
+
+      await user.save();
+      await qr.commitTransaction();
+      await qr.release();
+      return true;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST('bad request');
     }
   }
 

@@ -12,6 +12,7 @@ insert into
 drop table migrations;
 show tables;
 select * from user;
+select * from profile;
 delete from user;
 desc user;
 desc user;

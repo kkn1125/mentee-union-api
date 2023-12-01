@@ -335,6 +335,23 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`allow_terms` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `mentee-union`.`profile`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`profile` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `origin_name` VARCHAR(150) NULL DEFAULT NULL,
+  `new_name` VARCHAR(300) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_profile_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_profile_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

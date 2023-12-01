@@ -8,6 +8,11 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
+  UploadedFile,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +22,9 @@ import { UsersService } from './users.service';
 import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { CheckEmailPipe } from './pipe/check-email.pipe';
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
@@ -36,9 +44,10 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @Get('profile/:id(\\d+)')
-  findOneProfile(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOneProfile(+id);
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  findOneProfile(@Req() req: Request) {
+    return this.usersService.findOneProfile(req.user.userId);
   }
 
   @Post('check/username')
@@ -92,6 +101,19 @@ export class UsersController {
     } else {
       ApiResponseService.BAD_REQUEST('access denied', 'no exists session');
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  @UseInterceptors(FileInterceptor('profile'))
+  async updateProfile(
+    @Req() req: Request,
+    @UploadedFile() profile: Express.Multer.File,
+  ) {
+    console.log(profile);
+    this.usersService.updateProfile(req.user.userId, profile);
+    return ApiResponseService.SUCCESS('success');
+    // ApiResponseService.BAD_REQUEST('access denied', 'no exists session');
   }
 
   @Put(':id(\\d+)')

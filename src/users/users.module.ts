@@ -1,19 +1,19 @@
+import { ApiResponseModule } from '@/api-response/api-response.module';
+import encodeConfig from '@/config/encode.config';
+import { LoggerModule } from '@/logger/logger.module';
+import { MailerService } from '@/mailer/mailer.service';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Profile } from './entities/profile.entity';
+import { UserRecommend } from './entities/user-recommend.entity';
+import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { ApiResponseModule } from '@/api-response/api-response.module';
-import { LoggerModule } from '@/logger/logger.module';
-import { ConfigModule } from '@nestjs/config';
-import encodeConfig from '@/config/encode.config';
-import { UserRecommend } from './entities/user-recommend.entity';
-import { MailerModule } from '@/mailer/mailer.module';
-import { MailerService } from '@/mailer/mailer.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserRecommend]),
+    TypeOrmModule.forFeature([User, UserRecommend, Profile]),
     ConfigModule.forFeature(encodeConfig),
     ApiResponseModule,
     LoggerModule,

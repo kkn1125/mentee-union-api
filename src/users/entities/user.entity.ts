@@ -13,6 +13,7 @@ import { UserRecommend } from './user-recommend.entity';
 import { SeminarParticipant } from '@/seminars/entities/seminar-participant.entity';
 import { Seminar } from '@/seminars/entities/seminar.entity';
 import { Grade } from '@/grades/entities/grade.entity';
+import { Profile } from './profile.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -98,4 +99,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Seminar, (seminar) => seminar.user)
   seminar: Seminar;
+
+  @OneToMany(() => Profile, (profile) => profile.user)
+  profiles: Profile[];
 }
