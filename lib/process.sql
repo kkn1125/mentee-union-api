@@ -1,8 +1,19 @@
 use `mentee-union`;
 
+insert into
+        grade (`name`, `description`)
+        values
+        ("브론즈", "매우 낮음"),
+        ("실버", "중간"),
+        ("골드", "높음"),
+        ("다이아몬드", "조금 높음"),
+        ("플래티넘", "매우 높음");
+
 drop table migrations;
 show tables;
 select * from user;
+delete from user;
+desc user;
 desc user;
 select * from user_recommend;
 select * from seminar_participant;

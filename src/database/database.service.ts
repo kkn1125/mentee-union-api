@@ -33,7 +33,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
       timezone: '+09:00',
       namingStrategy: new SnakeNamingStrategy(),
       migrations: [Initialize1700558286023],
-      migrationsRun: true,
+      // migrationsRun: true,
       logging: true,
     };
   }

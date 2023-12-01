@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `birth` DATE NOT NULL,
   `gender` TINYINT(10) NOT NULL DEFAULT 0,
   `password` VARCHAR(150) NOT NULL,
+  `auth_email` TINYINT NOT NULL DEFAULT 0,
   `level` INT NOT NULL DEFAULT 0,
   `points` INT NOT NULL DEFAULT 0,
   `fail_login_count` INT NULL DEFAULT 0,
