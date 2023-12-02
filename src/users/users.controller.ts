@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Req,
+  Res,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -23,7 +24,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { CheckEmailPipe } from './pipe/check-email.pipe';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
@@ -42,6 +43,16 @@ export class UsersController {
   @Get(':id(\\d+)')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(+id);
+  }
+
+  @Get('profile/:filename')
+  getFilename(
+    @Res({ passthrough: true }) res: Response,
+    @Param('filename') filename: string,
+  ) {
+    const file = this.usersService.getProfileImage(filename);
+    res.contentType(`image/${filename.split('.')[1]}`);
+    res.send(file);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -110,8 +121,8 @@ export class UsersController {
     @Req() req: Request,
     @UploadedFile() profile: Express.Multer.File,
   ) {
-    console.log(profile);
-    this.usersService.updateProfile(req.user.userId, profile);
+    console.log('profile', profile);
+    await this.usersService.updateProfile(req.user.userId, profile);
     return ApiResponseService.SUCCESS('success');
     // ApiResponseService.BAD_REQUEST('access denied', 'no exists session');
   }
@@ -160,6 +171,17 @@ export class UsersController {
       ApiResponseService.SUCCESS('success restore dormant account');
     } else {
       ApiResponseService.BAD_REQUEST(flag);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('profile')
+  async deleteProfile(@Req() req: Request) {
+    const result = await this.usersService.deleteProfile(req.user.userId);
+    if (result) {
+      ApiResponseService.SUCCESS('success restore dormant account');
+    } else {
+      ApiResponseService.BAD_REQUEST('bad request');
     }
   }
 }

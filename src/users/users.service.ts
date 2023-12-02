@@ -15,11 +15,15 @@ import { Profile } from './entities/profile.entity';
 
 @Injectable()
 export class UsersService {
+  UPLOAD_PROFILE_PATH = 'storage/upload/profile';
+
   constructor(
     @InjectRepository(UserRecommend)
     private readonly userRecommendRepository: Repository<UserRecommend>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -98,6 +102,13 @@ export class UsersService {
 
   findOneByEmail(email: string) {
     return this.userRepository.findOne({ where: { email } });
+  }
+
+  getProfileImage(filename: string) {
+    const file = fs.readFileSync(
+      path.join(path.resolve(), this.UPLOAD_PROFILE_PATH, filename),
+    );
+    return file;
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -322,11 +333,12 @@ export class UsersService {
   }
 
   async updateProfile(id: number, profile: Express.Multer.File) {
-    const uploadProfilePath = 'storage/upload/profile';
     try {
-      fs.readdirSync(path.join(path.resolve(), uploadProfilePath));
+      fs.readdirSync(path.join(path.resolve(), this.UPLOAD_PROFILE_PATH));
     } catch (error) {
-      fs.mkdirSync(path.join(path.resolve(), uploadProfilePath));
+      fs.mkdirSync(path.join(path.resolve(), this.UPLOAD_PROFILE_PATH), {
+        recursive: true,
+      });
     }
 
     const user = await this.userRepository.findOne({ where: { id } });
@@ -334,39 +346,70 @@ export class UsersService {
       ApiResponseService.NOT_FOUND('user not found', id);
     }
 
+    const filename = cryptoJS
+      .HmacSHA256(
+        profile.originalname + +new Date(),
+        this.configService.get<string>('encode.privkey'),
+      )
+      .toString();
+
+    const extend = profile.originalname.split('.')[1];
+    const newFileName = filename + '.' + extend;
+
     try {
       fs.writeFileSync(
-        path.join(uploadProfilePath, profile.originalname),
+        path.join(this.UPLOAD_PROFILE_PATH, newFileName),
         profile.buffer,
       );
     } catch (error) {
       ApiResponseService.BAD_REQUEST('error creating profile file');
       return;
     }
+    // console.log(profile);
 
-    const qr = this.userRepository.manager.connection.createQueryRunner();
+    const qr = this.profileRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
 
     try {
-      const newProfile = new Profile();
-
-      newProfile.origin_name = profile.originalname;
-      newProfile.new_name = '';
-
-      if (!user.profiles) {
-        user.profiles = [];
-      }
-
-      user.profiles.push(newProfile);
-
-      await user.save();
+      await this.profileRepository.insert({
+        user_id: id,
+        origin_name: profile.originalname,
+        new_name: newFileName,
+      });
       await qr.commitTransaction();
       await qr.release();
       return true;
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();
+      ApiResponseService.BAD_REQUEST('bad request');
+    }
+  }
+
+  async deleteProfile(id: number) {
+    const qr = this.profileRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+
+    try {
+      const profiles = await this.profileRepository.find({
+        where: { user_id: id },
+      });
+      for (const profile of profiles) {
+        await profile.remove({ transaction: true });
+      }
+      // profiles.forEach((profile) => {
+      // });
+      // await this.profileRepository.delete({
+      //   user_id: id,
+      // });
+      qr.commitTransaction();
+      qr.release();
+      return true;
+    } catch (error) {
+      qr.rollbackTransaction();
+      qr.release();
       ApiResponseService.BAD_REQUEST('bad request');
     }
   }
