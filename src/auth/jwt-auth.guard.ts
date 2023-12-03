@@ -3,6 +3,7 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -14,22 +15,39 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    // const ctx = context.switchToHttp();
-    // const token = ctx
-    //   .getRequest()
-    //   .headers['authorization'].slice('Bearer '.length);
+  async canActivate(context: ExecutionContext) {
+    const ctx = context.switchToHttp();
+    const token = ctx
+      .getRequest()
+      .headers['authorization'].slice('Bearer '.length);
 
-    // const value = this.jwtService.verifyAsync(token, {
-    //   secret: this.configService.get<string>('jwt.secret'),
-    // });
+    console.log('🛠️ authorization check', token);
 
-    // console.log('value', value);
+    try {
+      const value = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('jwt.privkey'),
+      });
+      console.log('🛠️ check verified value', value);
+
+      const req = ctx.getRequest() as Request;
+      value['userId'] = value.sub;
+      delete value['sub'];
+      req['user'] = value;
+
+      return true;
+    } catch (error) {
+      console.log('🐛 check error:', error);
+      ApiResponseService.UNAUTHORIZED(error);
+    }
+
+    // value
+    //   .then((val) => {
+    //     console.log('🛠️ authorization check', val);
+    //   })
+    //   .catch((err) => {
+    //     console.log('🐛 authorization check', err);
+    //   });
     // this.auth;
-
-    return super.canActivate(context);
   }
 
   handleRequest(err, user, info) {
