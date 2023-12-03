@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 
 @Injectable()
@@ -52,7 +53,8 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    // console.log('errorOrMessage', Object.keys(errorOrMessage));
+    console.log('errorOrMessage', errorOrMessage.constructor.name);
+    console.log('errorOrMessage', Object.keys(errorOrMessage));
     if (errorOrMessage instanceof QueryFailedError) {
       return new HttpException(
         (errorOrMessage as QueryFailedErrors).code,
@@ -65,6 +67,10 @@ export class ApiResponseService {
       /* 404 분기 추가 2023-11-23 02:38:34 */
       return new HttpException('not found', HttpStatus.NOT_FOUND, {
         cause: messageOrDetails,
+      });
+    } else if (errorOrMessage instanceof JsonWebTokenError) {
+      return new HttpException('invalid token', HttpStatus.UNAUTHORIZED, {
+        cause: messageOrDetails || errorOrMessage.message,
       });
     } else {
       if (typeof errorOrMessage === 'string' && details === undefined) {
