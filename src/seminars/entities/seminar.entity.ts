@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { SeminarParticipant } from './seminar-participant.entity';
 import { User } from '@/users/entities/user.entity';
+import { Category } from '@/categories/entities/category.entity';
 
 @Entity()
 export class Seminar extends BaseEntity {
@@ -69,9 +70,15 @@ export class Seminar extends BaseEntity {
   )
   seminarParticipants: SeminarParticipant[];
 
-  @ManyToOne(() => User, (user) => user.seminar)
+  @ManyToOne(() => User, (user) => user.seminars)
   @JoinColumn({
     name: 'host_id',
   })
   user: User;
+
+  @ManyToOne(() => Category, (category) => category.seminars)
+  @JoinColumn({
+    name: 'category_id',
+  })
+  category: Category;
 }

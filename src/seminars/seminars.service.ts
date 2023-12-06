@@ -28,6 +28,7 @@ export class SeminarsService {
       relations: {
         user: true,
         seminarParticipants: true,
+        category: true,
       },
     });
   }
