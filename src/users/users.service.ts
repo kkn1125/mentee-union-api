@@ -85,7 +85,7 @@ export class UsersService {
           'updated_at',
         ],
         relations: {
-          seminar: true,
+          seminars: true,
           seminarParticipants: true,
           givers: true,
           receivers: true,
@@ -278,7 +278,7 @@ export class UsersService {
     await qr.startTransaction();
 
     try {
-      await this.userRepository.softDelete({ id });
+      await this.userRepository.delete({ id });
       await qr.commitTransaction();
       await qr.release();
       return true;

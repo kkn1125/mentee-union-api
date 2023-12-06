@@ -1,4 +1,7 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@/mailer/mailer.service';
 import {
   Body,
   Controller,
@@ -11,21 +14,17 @@ import {
   Req,
   Res,
   UploadedFile,
-  UploadedFiles,
   UseGuards,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Request, Response } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersService } from './users.service';
-import { LoggerService } from '@/logger/logger.service';
-import { MailerService } from '@/mailer/mailer.service';
 import { CheckEmailPipe } from './pipe/check-email.pipe';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
-import { Request, Response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -57,8 +56,13 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  findOneProfile(@Req() req: Request) {
-    return this.usersService.findOneProfile(req.user.userId);
+  async findOneProfile(@Req() req: Request) {
+    const user = await this.usersService.findOneProfile(req.user.userId);
+    if (user) {
+      return user;
+    } else {
+      ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+    }
   }
 
   @Post('check/username')
@@ -142,10 +146,17 @@ export class UsersController {
     ApiResponseService.SUCCESS('success');
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Delete('')
+  async softRemove(@Req() req: Request) {
+    await this.usersService.softRemove(req.user.userId);
+    ApiResponseService.SUCCESS('success soft delete');
+  }
+
   @Delete(':id(\\d+)')
   async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.usersService.softRemove(+id);
-    ApiResponseService.SUCCESS('success');
+    await this.usersService.remove(+id);
+    ApiResponseService.SUCCESS('success delete');
   }
 
   @Post('user-points')

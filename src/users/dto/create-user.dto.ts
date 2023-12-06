@@ -14,6 +14,7 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   grade_id: number;
 
   @IsNotEmpty()
@@ -34,6 +35,7 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   gender: number;
 
   @IsNotEmpty()
