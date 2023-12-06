@@ -7,11 +7,13 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { MailerService } from '@/mailer/mailer.service';
 @Injectable()
 export class AuthService {
   private readonly TRY_SIGN_IN_FAIL_LIMIT_COUNT = 5;
   constructor(
     private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
     private readonly usersService: UsersService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -62,6 +64,7 @@ export class AuthService {
 
     /* 로그인 실패 초과 시 */
     if (user.fail_login_count >= this.TRY_SIGN_IN_FAIL_LIMIT_COUNT) {
+      await this.mailerService.sendNoticeFailedSignin(user.email);
       ApiResponseService.BAD_REQUEST(
         'You have exceeded the maximum number of login attempts. Please try again later.',
       );

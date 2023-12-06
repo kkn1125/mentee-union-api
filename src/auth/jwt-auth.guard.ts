@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -19,9 +18,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const ctx = context.switchToHttp();
     const token = ctx
       .getRequest()
-      .headers['authorization'].slice('Bearer '.length);
+      .headers['authorization']?.slice('Bearer '.length);
 
     console.log('🛠️ authorization check', token);
+
+    if (!token) ApiResponseService.UNAUTHORIZED('no token');
 
     try {
       const value = await this.jwtService.verifyAsync(token, {
