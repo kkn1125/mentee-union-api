@@ -9,7 +9,22 @@ insert into
         ("다이아몬드", "조금 높음"),
         ("플래티넘", "매우 높음");
 
-drop table migrations;
+insert into
+        category (name, description)
+        values
+        ("IT", "개발"),
+        ("회계", "회계"),
+        ("독서", "독서"),
+        ("그림", "그림"),
+        ("자기계발", "자기계발");
+        
+select * from user;
+update user set auth_email=1 where id=11;
+select * from grade;
+select * from user;
+update user set points = 5;        
+
+#drop table migrations;
 show tables;
 select * from user;
 select * from profile;
