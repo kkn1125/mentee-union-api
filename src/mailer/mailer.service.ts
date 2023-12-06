@@ -34,7 +34,7 @@ export class MailerService {
     private readonly userService: UsersService,
   ) {}
 
-  async sendMailTo(to: string, checkMailLink: string) {
+  getTransforter() {
     const mailerConf = this.configService.get<MailerConfig>('mailer');
 
     const transforter = nodemailer.createTransport({
@@ -50,6 +50,12 @@ export class MailerService {
         minVersion: 'TLSv1.2',
       },
     });
+    return transforter;
+  }
+
+  async sendMailTo(to: string, checkMailLink: string) {
+    const mailerConf = this.configService.get<MailerConfig>('mailer');
+    const transforter = this.getTransforter();
 
     const result = await transforter.sendMail({
       from: `${mailerConf.smtpFromName} <${mailerConf.smtpFromEmail}>`,
@@ -60,6 +66,32 @@ export class MailerService {
           <h3>본인에 의한 메일 발송이 아니라면 아래 문의처로 연락주세요.</h3>
           <div>
             <a href="${checkMailLink}">여기를 클릭해서 본인 인증을 진행 해주세요.</a>
+          </div>
+          <div>
+            문의처: 02-1231-1231
+          </div>
+        `,
+    });
+    console.log('send email result:', result);
+
+    transforter.close();
+  }
+
+  async sendNoticeFailedSignin(to: string) {
+    const mailerConf = this.configService.get<MailerConfig>('mailer');
+    const transforter = this.getTransforter();
+
+    const result = await transforter.sendMail({
+      from: `${mailerConf.smtpFromName} <${mailerConf.smtpFromEmail}>`,
+      to: `${to}`,
+      subject: '로그인 시도 한도 초과 알림',
+      html: `
+          <h3>본인에 의한 메일 발송이 아니라면 아래 문의처로 연락주세요.</h3>
+          <div>
+            로그인 시도 한도를 초과했습니다. 보안을 위해 계정이 잠기며, 비밀번호를 재설정해야합니다.
+          </div>
+          <div>
+            <a href="http://localhost:5000/auth/request-pass?r=%2F">여기를 클릭해서 비밀번호 재설정을 진행해주세요.</a>
           </div>
           <div>
             문의처: 02-1231-1231
