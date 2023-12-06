@@ -14,7 +14,11 @@ export class ForumsService {
   ) {}
 
   findAll() {
-    return this.forumRepository.find();
+    return this.forumRepository.find({
+      relations: {
+        user: true,
+      },
+    });
   }
 
   async findOne(id: number) {

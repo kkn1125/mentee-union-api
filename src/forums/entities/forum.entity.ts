@@ -1,9 +1,11 @@
+import { User } from '@/users/entities/user.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,4 +32,7 @@ export class Forum extends BaseEntity {
 
   @UpdateDateColumn()
   updated_at: string;
+
+  @ManyToOne(() => User, (user) => user.forums)
+  user: User;
 }
