@@ -1,3 +1,5 @@
+import { Category } from '@/categories/entities/category.entity';
+import { Channel } from '@/channels/entities/channel.entity';
 import { Mentoring } from '@/mentoring/entities/mentoring.entity';
 import {
   BaseEntity,
@@ -22,7 +24,7 @@ export class MentoringSession extends BaseEntity {
 
   /* 세션 대화 소켓 채널 주소 */
   @Column()
-  socket_url: string;
+  channel_id: number;
 
   /* 세션 주제 */
   @Column()
@@ -54,4 +56,10 @@ export class MentoringSession extends BaseEntity {
 
   @OneToOne(() => Mentoring, (mentoring) => mentoring.mentoringSession)
   mentoring: Mentoring;
+
+  @ManyToOne(() => Category, (category) => category.mentoringSessions)
+  category: Category;
+
+  @OneToOne(() => Channel, (channel) => channel.mentoringSession)
+  channel: Channel;
 }
