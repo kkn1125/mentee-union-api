@@ -53,8 +53,6 @@ export class ApiResponseService {
     messageOrDetails?: number | string | (number | string)[],
     details?: number | string | (number | string)[],
   ) {
-    console.log('errorOrMessage', errorOrMessage.constructor.name);
-    console.log('errorOrMessage', Object.keys(errorOrMessage));
     if (errorOrMessage instanceof QueryFailedError) {
       return new HttpException(
         (errorOrMessage as QueryFailedErrors).code,

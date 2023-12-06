@@ -13,7 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { MailerModule } from './mailer/mailer.module';
 import { GradesModule } from './grades/grades.module';
 import { MentoringSessionModule } from './mentoring-session/mentoring-session.module';
-import { ChannelModule } from './channel/channel.module';
+import { CategoriesModule } from './categories/categories.module';
+import { ChannelsModule } from './channels/channels.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { ChannelModule } from './channel/channel.module';
     MailerModule,
     GradesModule,
     MentoringSessionModule,
-    ChannelModule,
+    CategoriesModule,
+    ChannelsModule,
   ],
   controllers: [],
   providers: [],
