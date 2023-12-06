@@ -14,6 +14,8 @@ import { SeminarParticipant } from '@/seminars/entities/seminar-participant.enti
 import { Seminar } from '@/seminars/entities/seminar.entity';
 import { Grade } from '@/grades/entities/grade.entity';
 import { Profile } from './profile.entity';
+import { Category } from '@/categories/entities/category.entity';
+import { Forum } from '@/forums/entities/forum.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -98,8 +100,11 @@ export class User extends BaseEntity {
   seminarParticipants: SeminarParticipant[];
 
   @OneToMany(() => Seminar, (seminar) => seminar.user)
-  seminar: Seminar;
+  seminars: Seminar[];
 
   @OneToMany(() => Profile, (profile) => profile.user)
   profiles: Profile[];
+
+  @OneToMany(() => Forum, (forum) => forum.user)
+  forums: Forum[];
 }
