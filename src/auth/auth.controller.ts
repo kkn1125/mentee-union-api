@@ -6,13 +6,15 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Request,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/signin.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
+import { Request } from 'express';
+import { ApiResponseService } from '@/api-response/api-response.service';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +29,18 @@ export class AuthController {
   signIn(@Body() signinDto: SigninDto) {
     this.logger.debug('signinDto', signinDto);
     return this.authService.signIn(signinDto.email, signinDto.password);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  async refresh(@Req() req: Request) {
+    try {
+      await this.authService.checkUser(req.user.userId);
+      return this.authService.refreshSign(req.user.email);
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, 'user not found');
+    }
   }
 
   // @UseGuards(LocalAuthGuard)
@@ -49,15 +63,20 @@ export class AuthController {
   // @UseGuards(AuthGuard)
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  async getProfile(@Req() req: Request) {
     // console.log('controller profile', req.user);
-    return req.user;
+    try {
+      await this.authService.checkUser(req.user.userId);
+      return req.user;
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, 'user not found');
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('signout')
   @HttpCode(200)
-  signout(@Request() req) {
+  signout(@Req() req: Request) {
     const result = this.authService.signOut(req.user.userId);
     return !!result;
   }

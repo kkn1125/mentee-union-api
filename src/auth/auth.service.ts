@@ -131,6 +131,59 @@ export class AuthService {
     }
   }
 
+  async refreshSign(email: string) {
+    const userQr = this.userRepository.manager.connection.createQueryRunner();
+
+    await userQr.startTransaction();
+
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+
+      const payload = {
+        sub: user.id,
+        username: user.username,
+        email: user.email,
+        phone_number: user.phone_number,
+        // role: user.role,
+        last_sign_in: user.last_login_at,
+      };
+
+      const result = await this.usersService.update(user.id, {
+        status: 'login',
+        fail_login_count: 0,
+        last_login_at: new Date(),
+      });
+
+      await userQr.commitTransaction();
+      await userQr.release();
+
+      if (result === null) {
+        ApiResponseService.BAD_REQUEST('fail update user info.');
+      }
+
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '30m',
+      });
+      const refreshToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '1h',
+      });
+
+      if (user !== null) {
+        delete user['password'];
+      }
+
+      return {
+        user,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      };
+    } catch (error) {
+      await userQr.rollbackTransaction();
+      await userQr.release();
+      ApiResponseService.BAD_REQUEST(error, 'bad request');
+    }
+  }
+
   async updatePassword(email: string, newPassword: string) {
     const user = await this.usersService.findOneByEmail(email);
     if (user) {
@@ -142,6 +195,10 @@ export class AuthService {
         password: encryptedNewPassword,
       });
     }
+  }
+
+  checkUser(user_id: number) {
+    return this.userRepository.findOneOrFail({ where: { id: user_id } });
   }
 
   async signOut(id: number) {

@@ -36,6 +36,21 @@ export class CategoriesService {
     }
   }
 
+  async findOneByValue(value: string) {
+    try {
+      const category = await this.categoryRepository.findOneOrFail({
+        where: { name: value },
+        relations: {
+          mentoringSessions: true,
+          seminars: true,
+        },
+      });
+      return category;
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, 'not found category value', value);
+    }
+  }
+
   async create(createCategoryDto: CreateCategoryDto) {
     const qr = this.categoryRepository.manager.connection.createQueryRunner();
 

@@ -15,6 +15,7 @@ import { GradesModule } from './grades/grades.module';
 import { MentoringSessionModule } from './mentoring-session/mentoring-session.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ChannelsModule } from './channels/channels.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ChannelsModule } from './channels/channels.module';
     MentoringSessionModule,
     CategoriesModule,
     ChannelsModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [],

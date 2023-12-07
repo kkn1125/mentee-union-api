@@ -7,10 +7,6 @@ export class CreateMentoringSessionDto {
 
   @IsNotEmpty()
   @IsString()
-  socket_url: string;
-
-  @IsNotEmpty()
-  @IsString()
   topic: string;
 
   @IsNotEmpty()

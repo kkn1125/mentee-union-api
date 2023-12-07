@@ -22,10 +22,6 @@ export class MentoringSession extends BaseEntity {
   @Column()
   category_id: number;
 
-  /* 세션 대화 소켓 채널 주소 */
-  @Column()
-  channel_id: number;
-
   /* 세션 주제 */
   @Column()
   topic: string;

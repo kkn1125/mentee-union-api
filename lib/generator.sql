@@ -171,25 +171,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`channel`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`channel` (
-  `id` INT NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
-  `url` VARCHAR(200) NOT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `mentee-union`.`mentoring_session`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `category_id` INT NOT NULL,
-  `channel_id` INT NOT NULL,
   `topic` VARCHAR(50) NOT NULL,
   `objective` VARCHAR(100) NOT NULL,
   `format` VARCHAR(30) NOT NULL,
@@ -199,15 +185,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `fk_mento-mentee-session_category1_idx` (`category_id` ASC) VISIBLE,
-  INDEX `fk_mentoring_session_channel1_idx` (`channel_id` ASC) VISIBLE,
   CONSTRAINT `fk_mento-mentee-session_category1`
     FOREIGN KEY (`category_id`)
     REFERENCES `mentee-union`.`category` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_mentoring_session_channel1`
-    FOREIGN KEY (`channel_id`)
-    REFERENCES `mentee-union`.`channel` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -225,7 +205,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`, `mentor_id`, `mentee_id`, `mentoring_session_id`),
+  PRIMARY KEY (`id`, `mentor_id`, `mentee_id`),
   INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC) VISIBLE,
   INDEX `fk_mentor_mentee_matches_mento_mentee_users1_idx` (`mentor_id` ASC) VISIBLE,
   INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
@@ -335,19 +315,62 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`allow_terms` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`channel`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`channel` (
+  `id` INT NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `url` VARCHAR(200) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
 -- -----------------------------------------------------
 -- Table `mentee-union`.`profile`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`profile` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
-  `origin_name` VARCHAR(150) NULL DEFAULT NULL,
   `new_name` VARCHAR(300) NULL DEFAULT NULL,
+  `origin_name` VARCHAR(150) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_profile_user1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_profile_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`messages`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`messages` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `mentoring_session_id` INT NOT NULL,
+  `message` VARCHAR(300) NOT NULL,
+  `is_read` TINYINT NOT NULL DEFAULT 0,
+  `is_top` TINYINT NOT NULL DEFAULT 0,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `fk_table1_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_messages_mentoring_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
+  CONSTRAINT `fk_table1_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_messages_mentoring_session1`
+    FOREIGN KEY (`mentoring_session_id`)
+    REFERENCES `mentee-union`.`mentoring_session` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
