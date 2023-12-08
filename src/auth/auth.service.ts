@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { MailerService } from '@/mailer/mailer.service';
+import * as cryptoJS from 'crypto-js';
 @Injectable()
 export class AuthService {
   private readonly TRY_SIGN_IN_FAIL_LIMIT_COUNT = 5;
@@ -199,6 +200,16 @@ export class AuthService {
 
   checkUser(user_id: number) {
     return this.userRepository.findOneOrFail({ where: { id: user_id } });
+  }
+
+  provideSocketToken() {
+    return cryptoJS
+      .HmacSHA256('channel-socket-server', 'devkimson-sockete-server-provkey')
+      .toString();
+  }
+
+  verifySocketToken(socketToken: string) {
+    return socketToken === this.provideSocketToken();
   }
 
   async signOut(id: number) {

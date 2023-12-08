@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { Request } from 'express';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { SocketAuthGuard } from './local-channel-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -41,6 +42,17 @@ export class AuthController {
     } catch (error) {
       ApiResponseService.NOT_FOUND(error, 'user not found');
     }
+  }
+
+  @Post('socket/token')
+  provideToken() {
+    return this.authService.provideSocketToken();
+  }
+
+  @UseGuards(SocketAuthGuard)
+  @Get('socket/verify')
+  verifyToken(@Req() req: Request) {
+    return this.authService.verifySocketToken(req.channels.token);
   }
 
   // @UseGuards(LocalAuthGuard)

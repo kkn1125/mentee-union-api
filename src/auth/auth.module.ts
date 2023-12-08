@@ -33,5 +33,6 @@ import { MailerModule } from '@/mailer/mailer.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}
