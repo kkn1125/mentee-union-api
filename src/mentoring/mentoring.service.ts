@@ -17,6 +17,15 @@ export class MentoringService {
     return this.mentoringRepository.find();
   }
 
+  findAllByUserId(user_id: number) {
+    return this.mentoringRepository.find({
+      where: { mentee_id: user_id },
+      relations: {
+        mentoringSession: true,
+      },
+    });
+  }
+
   async findOne(id: number) {
     try {
       return await this.mentoringRepository.findOneOrFail({ where: { id } });
@@ -51,6 +60,7 @@ export class MentoringService {
       const dto = await this.mentoringRepository.update(id, updateMentoringDto);
       await qr.commitTransaction();
       await qr.release();
+      return dto;
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();

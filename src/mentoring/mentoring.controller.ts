@@ -8,6 +8,9 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
+  Req,
+  UseGuards,
   // Req,
   // Res,
 } from '@nestjs/common';
@@ -15,6 +18,8 @@ import { CreateMentoringDto } from './dto/create-mentoring.dto';
 import { UpdateMentoringDto } from './dto/update-mentoring.dto';
 import { MentoringService } from './mentoring.service';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
+import { Request } from 'express';
 // import { Request, Response } from 'express';
 // import * as cryptoJS from 'crypto-js';
 // import { WebSocketServer } from '@nestjs/websockets';
@@ -46,6 +51,12 @@ export class MentoringController {
   @Get()
   findAll() {
     return this.mentoringService.findAll();
+  }
+
+  @UseGuards(SocketAuthGuard)
+  @Get('user')
+  findAllByUser(@Req() req: Request) {
+    return this.mentoringService.findAllByUserId(req.channels.user_id);
   }
 
   @Get(':id(\\d+)')

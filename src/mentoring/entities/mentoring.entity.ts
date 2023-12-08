@@ -6,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -16,8 +17,8 @@ export class Mentoring extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  mentor_id: number;
+  // @Column()
+  // mentor_id: number;
 
   @Column()
   mentee_id: number;
@@ -42,10 +43,10 @@ export class Mentoring extends BaseEntity {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(
+  @ManyToOne(
     () => MentoringSession,
-    (mentoringSession) => mentoringSession.mentoring,
+    (mentoringSession) => mentoringSession.mentorings,
   )
-  @JoinColumn()
+  @JoinColumn({ name: 'mentoring_session_id' })
   mentoringSession: MentoringSession;
 }

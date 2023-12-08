@@ -198,22 +198,15 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `mentor_id` INT NOT NULL,
   `mentee_id` INT NOT NULL,
   `mentoring_session_id` INT NOT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'waiting',
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`, `mentor_id`, `mentee_id`),
+  PRIMARY KEY (`id`),
   INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC) VISIBLE,
-  INDEX `fk_mentor_mentee_matches_mento_mentee_users1_idx` (`mentor_id` ASC) VISIBLE,
   INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
-  CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users1`
-    FOREIGN KEY (`mentor_id`)
-    REFERENCES `mentee-union`.`user` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users2`
     FOREIGN KEY (`mentee_id`)
     REFERENCES `mentee-union`.`user` (`id`)

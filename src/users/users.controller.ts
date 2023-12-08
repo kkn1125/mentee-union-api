@@ -25,6 +25,7 @@ import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CheckEmailPipe } from './pipe/check-email.pipe';
 import { UsersService } from './users.service';
+import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -62,6 +63,22 @@ export class UsersController {
       return user;
     } else {
       ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+    }
+  }
+
+  @UseGuards(SocketAuthGuard)
+  @Get('socket/profile')
+  async findOneSocketProfile(@Req() req: Request) {
+    const userId = +req.headers['user_id'];
+    if (!userId) {
+      ApiResponseService.BAD_REQUEST('invalid header');
+    } else {
+      const user = await this.usersService.findOneProfile(userId);
+      if (user) {
+        return user;
+      } else {
+        ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+      }
     }
   }
 

@@ -16,6 +16,7 @@ import { Grade } from '@/grades/entities/grade.entity';
 import { Profile } from './profile.entity';
 import { Category } from '@/categories/entities/category.entity';
 import { Forum } from '@/forums/entities/forum.entity';
+import { Message } from '@/messages/entities/message.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -107,4 +108,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Forum, (forum) => forum.user)
   forums: Forum[];
+
+  @OneToMany(() => Message, (message) => message.user)
+  messages: Message[];
 }

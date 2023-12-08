@@ -1,6 +1,6 @@
 import { Category } from '@/categories/entities/category.entity';
-import { Channel } from '@/channels/entities/channel.entity';
 import { Mentoring } from '@/mentoring/entities/mentoring.entity';
+import { Message } from '@/messages/entities/message.entity';
 import {
   BaseEntity,
   Column,
@@ -8,6 +8,7 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -50,12 +51,12 @@ export class MentoringSession extends BaseEntity {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToOne(() => Mentoring, (mentoring) => mentoring.mentoringSession)
-  mentoring: Mentoring;
+  @OneToMany(() => Mentoring, (mentoring) => mentoring.mentoringSession)
+  mentorings: Mentoring[];
+
+  @OneToMany(() => Message, (message) => message.mentoringSession)
+  messages: Message[];
 
   @ManyToOne(() => Category, (category) => category.mentoringSessions)
   category: Category;
-
-  @OneToOne(() => Channel, (channel) => channel.mentoringSession)
-  channel: Channel;
 }

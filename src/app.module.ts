@@ -14,7 +14,7 @@ import { MailerModule } from './mailer/mailer.module';
 import { GradesModule } from './grades/grades.module';
 import { MentoringSessionModule } from './mentoring-session/mentoring-session.module';
 import { CategoriesModule } from './categories/categories.module';
-import { ChannelsModule } from './channels/channels.module';
+// import { ChannelsModule } from './channels/channels.module';
 import { MessagesModule } from './messages/messages.module';
 
 @Module({
@@ -37,7 +37,6 @@ import { MessagesModule } from './messages/messages.module';
     GradesModule,
     MentoringSessionModule,
     CategoriesModule,
-    ChannelsModule,
     MessagesModule,
   ],
   controllers: [],
