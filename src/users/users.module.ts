@@ -10,6 +10,9 @@ import { UserRecommend } from './entities/user-recommend.entity';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { AuthModule } from '@/auth/auth.module';
+import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
+import { AuthService } from '@/auth/auth.service';
 
 @Module({
   imports: [
@@ -19,7 +22,7 @@ import { UsersService } from './users.service';
     LoggerModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, MailerService],
+  providers: [UsersService, MailerService, AuthService],
   exports: [UsersService],
 })
 export class UsersModule {}

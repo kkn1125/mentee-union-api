@@ -17,10 +17,23 @@ export class MentoringSessionService {
     return this.mentoringSessionRepository.find();
   }
 
+  findAllByUser(user_id: number) {
+    return this.mentoringSessionRepository.find({
+      where: {
+        mentorings: {
+          mentee_id: user_id,
+        },
+      },
+    });
+  }
+
   async findOne(id: number) {
     try {
       return await this.mentoringSessionRepository.findOneOrFail({
         where: { id },
+        relations: {
+          mentorings: true,
+        },
       });
     } catch (error) {
       ApiResponseService.NOT_FOUND(error, `not found mentoring session ${id}`);
