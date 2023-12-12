@@ -21,7 +21,14 @@ export class MentoringService {
     return this.mentoringRepository.find({
       where: { mentee_id: user_id },
       relations: {
-        mentoringSession: true,
+        mentoringSession: {
+          category: true,
+          mentorings: {
+            user: {
+              profiles: true,
+            },
+          },
+        },
       },
     });
   }
@@ -68,9 +75,23 @@ export class MentoringService {
     }
   }
 
-  async remove(id: number) {
+  async softRemove(id: number) {
     await this.findOne(id);
     return this.mentoringRepository.softDelete({ id });
+  }
+
+  async removeBySessionId(session_id: number, mentee_id: number) {
+    try {
+      const mentoring = await this.mentoringRepository.findOneOrFail({
+        where: {
+          mentoring_session_id: session_id,
+          mentee_id,
+        },
+      });
+      return this.mentoringRepository.softDelete({ id: mentoring.id });
+    } catch (error) {
+      ApiResponseService.NOT_FOUND(error, 'not found', [session_id, mentee_id]);
+    }
   }
 
   async restore(id: number) {

@@ -54,7 +54,7 @@ export class MentoringController {
   }
 
   @UseGuards(SocketAuthGuard)
-  @Get('user')
+  @Get('users')
   findAllByUser(@Req() req: Request) {
     return this.mentoringService.findAllByUserId(req.channels.user_id);
   }
@@ -79,7 +79,16 @@ export class MentoringController {
 
   @Delete(':id(\\d+)')
   async remove(@Param('id', ParseIntPipe) id: number) {
-    await this.mentoringService.remove(id);
+    await this.mentoringService.softRemove(id);
+    ApiResponseService.SUCCESS('success delete mentoring');
+  }
+
+  @Delete('session/:session_id(\\d+)/mentee/:mentee_id(\\d+)')
+  async removeBySessionIdForMentee(
+    @Param('session_id', ParseIntPipe) session_id: number,
+    @Param('mentee_id', ParseIntPipe) mentee_id: number,
+  ) {
+    await this.mentoringService.removeBySessionId(session_id, mentee_id);
     ApiResponseService.SUCCESS('success delete mentoring');
   }
 

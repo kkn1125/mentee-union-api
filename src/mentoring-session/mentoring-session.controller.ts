@@ -24,7 +24,7 @@ export class MentoringSessionController {
   ) {}
 
   @Get()
-  findAll() {
+  findAll(@Req() req: Request) {
     return this.mentoringSessionService.findAll();
   }
 
@@ -34,7 +34,8 @@ export class MentoringSessionController {
     return this.mentoringSessionService.findAllByUser(req.channels.user_id);
   }
 
-  @Get(':id')
+  @UseGuards(SocketAuthGuard)
+  @Get(':id(\\d+)')
   findOne(@Param('id') id: string) {
     return this.mentoringSessionService.findOne(+id);
   }
@@ -44,7 +45,7 @@ export class MentoringSessionController {
     return this.mentoringSessionService.create(createMentoringSessionDto);
   }
 
-  @Put(':id')
+  @Put(':id(\\d+)')
   update(
     @Param('id') id: string,
     @Body() updateMentoringSessionDto: UpdateMentoringSessionDto,
@@ -52,7 +53,7 @@ export class MentoringSessionController {
     return this.mentoringSessionService.update(+id, updateMentoringSessionDto);
   }
 
-  @Delete(':id')
+  @Delete(':id(\\d+)')
   remove(@Param('id') id: string) {
     return this.mentoringSessionService.remove(+id);
   }

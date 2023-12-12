@@ -19,10 +19,11 @@ export class MentoringSessionService {
 
   findAllByUser(user_id: number) {
     return this.mentoringSessionRepository.find({
-      where: {
-        mentorings: {
-          mentee_id: user_id,
-        },
+      where: { mentorings: { mentee_id: user_id } },
+      relations: {
+        mentorings: true,
+        messages: true,
+        category: true,
       },
     });
   }
@@ -33,6 +34,8 @@ export class MentoringSessionService {
         where: { id },
         relations: {
           mentorings: true,
+          messages: true,
+          category: true,
         },
       });
     } catch (error) {
@@ -47,8 +50,13 @@ export class MentoringSessionService {
     await qr.startTransaction();
 
     try {
-      const dto =
-        await this.mentoringSessionRepository.save(createMentoringDto);
+      const dto = await this.mentoringSessionRepository.save(
+        createMentoringDto,
+        {
+          transaction: true,
+        },
+      );
+      console.log('mentoringsession dto', dto);
       await qr.commitTransaction();
       await qr.release();
       return dto;

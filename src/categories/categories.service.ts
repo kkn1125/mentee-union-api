@@ -12,11 +12,17 @@ export class CategoriesService {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
   ) {}
-  findAll() {
+  findAll({
+    seminars,
+    mentoringSessions,
+  }: {
+    seminars?: boolean;
+    mentoringSessions?: boolean;
+  }) {
     return this.categoryRepository.find({
       relations: {
-        mentoringSessions: true,
-        seminars: true,
+        seminars,
+        mentoringSessions,
       },
     });
   }

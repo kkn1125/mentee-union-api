@@ -1,4 +1,5 @@
 import { MentoringSession } from '@/mentoring-session/entities/mentoring-session.entity';
+import { User } from '@/users/entities/user.entity';
 import {
   BaseEntity,
   Column,
@@ -6,6 +7,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -47,6 +49,9 @@ export class Mentoring extends BaseEntity {
     () => MentoringSession,
     (mentoringSession) => mentoringSession.mentorings,
   )
-  @JoinColumn({ name: 'mentoring_session_id' })
   mentoringSession: MentoringSession;
+
+  @ManyToOne(() => User, (user) => user.mentorings)
+  @JoinColumn({ name: 'mentee_id' })
+  user: User;
 }
