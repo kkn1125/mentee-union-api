@@ -17,6 +17,7 @@ import { Profile } from './profile.entity';
 import { Category } from '@/categories/entities/category.entity';
 import { Forum } from '@/forums/entities/forum.entity';
 import { Message } from '@/messages/entities/message.entity';
+import { Mentoring } from '@/mentoring/entities/mentoring.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -111,4 +112,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Message, (message) => message.user)
   messages: Message[];
+
+  @OneToMany(() => Mentoring, (mentoring) => mentoring.user)
+  mentorings: Mentoring[];
 }
