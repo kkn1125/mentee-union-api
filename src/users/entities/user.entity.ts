@@ -1,3 +1,9 @@
+import { Forum } from '@/forums/entities/forum.entity';
+import { Grade } from '@/grades/entities/grade.entity';
+import { Mentoring } from '@/mentoring/entities/mentoring.entity';
+import { Message } from '@/messages/entities/message.entity';
+import { SeminarParticipant } from '@/seminars/entities/seminar-participant.entity';
+import { Seminar } from '@/seminars/entities/seminar.entity';
 import {
   BaseEntity,
   Column,
@@ -9,15 +15,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserRecommend } from './user-recommend.entity';
-import { SeminarParticipant } from '@/seminars/entities/seminar-participant.entity';
-import { Seminar } from '@/seminars/entities/seminar.entity';
-import { Grade } from '@/grades/entities/grade.entity';
 import { Profile } from './profile.entity';
-import { Category } from '@/categories/entities/category.entity';
-import { Forum } from '@/forums/entities/forum.entity';
-import { Message } from '@/messages/entities/message.entity';
-import { Mentoring } from '@/mentoring/entities/mentoring.entity';
+import { UserRecommend } from './user-recommend.entity';
 
 @Entity()
 export class User extends BaseEntity {
