@@ -17,6 +17,7 @@ import {
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { UserRecommend } from './user-recommend.entity';
+import { ReadMessage } from '@/messages/entities/read-message.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -114,4 +115,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Mentoring, (mentoring) => mentoring.user)
   mentorings: Mentoring[];
+
+  @OneToMany(() => ReadMessage, (readMessage) => readMessage.user)
+  readedMessages: ReadMessage[];
 }

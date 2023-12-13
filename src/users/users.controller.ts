@@ -69,7 +69,7 @@ export class UsersController {
   @UseGuards(SocketAuthGuard)
   @Get('socket/profile')
   async findOneSocketProfile(@Req() req: Request) {
-    const userId = +req.headers['user_id'];
+    const userId = +req.channels.user_id;
     if (!userId) {
       ApiResponseService.BAD_REQUEST('invalid header');
     } else {
