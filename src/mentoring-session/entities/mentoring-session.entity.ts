@@ -42,6 +42,10 @@ export class MentoringSession extends BaseEntity {
   @Column()
   note: string;
 
+  /* 세션 노트 */
+  @Column()
+  limit: number;
+
   @DeleteDateColumn()
   deleted_at: Date;
 
