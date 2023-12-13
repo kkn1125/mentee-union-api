@@ -17,10 +17,73 @@ insert into
         ("독서", "독서"),
         ("그림", "그림"),
         ("자기계발", "자기계발");
+        
+desc forum;
+desc seminar;
 
+insert into forum (user_id, title, content) values
+(2, "test forum1", "test forum content1"),(2, "test forum2", "test forum content2"),
+(2, "test forum3", "test forum content3"),(2, "test forum5", "test forum content5");
 
+INSERT INTO `mentee-union`.`seminar`
+  (
+    `host_id`,
+    `category_id`,
+    `title`,
+    `content`,
+    `meeting_place`,
+    `limit_participant_amount`,
+    `recruit_start_date`,
+    `recruit_end_date`,
+    `seminar_start_date`,
+    `seminar_end_date`,
+    `is_recruit_finished`,
+    `is_seminar_finished`
+    )
+VALUES (
+  2,
+  1,
+  "test title1",
+  "test content1",
+  "seoul jungrang-gu",
+  10,
+  "2023-12-12",
+  "2023-12-14",
+  "2023-12-20",
+  "2023-12-21",
+  0,
+  0),(
+  2,
+  1,
+  "test title2",
+  "test content2",
+  "seoul jungrang-gu",
+  10,
+  "2023-12-12",
+  "2023-12-14",
+  "2023-12-20",
+  "2023-12-21",
+  0,
+  0);
+#delete from read_message;
+#delete from message;
+select * from message where mentoring_session_id = 17 and id in (select message_id from read_message where user_id != 3);
+select message_id from read_message where user_id != 3;
+select message.* from message left join read_message on message.id = read_message.message_id where message.mentoring_session_id = 17 and read_message.user_id != 3;
+#select * from read_message;
+select distinct message.* from mentoring_session left join message on mentoring_session.id = message.mentoring_session_id left join read_message on message.user_id = read_message.user_id
+where mentoring_session.id = 17 group by message.id;
 select * from mentoring;
+select * from mentoring left join mentoring_session on mentoring_session.id = mentoring.mentoring_session_id where mentoring.mentee_id = 2;
+select * from read_message;
+select * from message;
 select * from mentoring_session;
+select * from read_message order by id;
+update mentoring set deleted_at = null;
+desc mentoring_session;
+desc message;
+alter table mentoring_session add column `limit` int not null default 2 after note;
+#delete from mentoring_session;
 select * from user;
 select * from messages;
 update user set auth_email=1 where id=11;

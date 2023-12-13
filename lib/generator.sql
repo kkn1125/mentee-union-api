@@ -180,6 +180,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `objective` VARCHAR(100) NOT NULL,
   `format` VARCHAR(30) NOT NULL,
   `note` VARCHAR(200) NOT NULL,
+  `limit` INT NOT NULL DEFAULT 2,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -200,6 +201,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `mentee_id` INT NOT NULL,
   `mentoring_session_id` INT NOT NULL,
+  `token` VARCHAR(200) NOT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'waiting',
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -341,14 +343,13 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`messages`
+-- Table `mentee-union`.`message`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`messages` (
+CREATE TABLE IF NOT EXISTS `mentee-union`.`message` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `mentoring_session_id` INT NOT NULL,
   `message` VARCHAR(300) NOT NULL,
-  `is_read` TINYINT NOT NULL DEFAULT 0,
   `is_top` TINYINT NOT NULL DEFAULT 0,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -364,6 +365,29 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`messages` (
   CONSTRAINT `fk_messages_mentoring_session1`
     FOREIGN KEY (`mentoring_session_id`)
     REFERENCES `mentee-union`.`mentoring_session` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`read_message`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`read_message` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `message_id` INT NOT NULL,
+  PRIMARY KEY (`id`, `user_id`, `message_id`),
+  INDEX `fk_user_has_message_message1_idx` (`message_id` ASC) VISIBLE,
+  INDEX `fk_user_has_message_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_user_has_message_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_has_message_message1`
+    FOREIGN KEY (`message_id`)
+    REFERENCES `mentee-union`.`message` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
