@@ -3,7 +3,7 @@ import { CreateMentoringSessionDto } from './dto/create-mentoring-session.dto';
 import { UpdateMentoringSessionDto } from './dto/update-mentoring-session.dto';
 import { MentoringSession } from './entities/mentoring-session.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { ApiResponseService } from '@/api-response/api-response.service';
 
 @Injectable()
@@ -21,8 +21,25 @@ export class MentoringSessionService {
     return this.mentoringSessionRepository.find({
       where: { mentorings: { mentee_id: user_id } },
       relations: {
-        mentorings: true,
-        messages: true,
+        mentorings: { user: { profiles: true } },
+        messages: { user: { profiles: true }, readedUsers: true },
+        category: true,
+      },
+    });
+  }
+
+  findAllNotReadByUserId(user_id: number) {
+    return this.mentoringSessionRepository.find({
+      where: {
+        messages: {
+          readedUsers: {
+            user_id: Not(In([user_id])),
+          },
+        },
+      },
+      relations: {
+        mentorings: { user: { profiles: true } },
+        messages: { user: { profiles: true }, readedUsers: true },
         category: true,
       },
     });
@@ -33,9 +50,14 @@ export class MentoringSessionService {
       return await this.mentoringSessionRepository.findOneOrFail({
         where: { id },
         relations: {
-          mentorings: true,
-          messages: true,
+          mentorings: { user: { profiles: true } },
+          messages: { user: { profiles: true }, readedUsers: true },
           category: true,
+        },
+        order: {
+          messages: {
+            id: 'asc',
+          },
         },
       });
     } catch (error) {

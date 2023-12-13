@@ -35,6 +35,14 @@ export class MentoringSessionController {
   }
 
   @UseGuards(SocketAuthGuard)
+  @Get('users/not-read')
+  findAllNotReadByUserId(@Req() req: Request) {
+    return this.mentoringSessionService.findAllNotReadByUserId(
+      req.channels.user_id,
+    );
+  }
+
+  @UseGuards(SocketAuthGuard)
   @Get(':id(\\d+)')
   findOne(@Param('id') id: string) {
     return this.mentoringSessionService.findOne(+id);
