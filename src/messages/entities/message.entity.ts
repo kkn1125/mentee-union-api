@@ -6,10 +6,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ReadMessage } from './read-message.entity';
 
 @Entity()
 export class Message extends BaseEntity {
@@ -26,10 +29,10 @@ export class Message extends BaseEntity {
   message: string;
 
   @Column()
-  is_read: number;
+  is_top: boolean;
 
   @Column()
-  is_top: number;
+  is_deleted: boolean;
 
   @DeleteDateColumn()
   deleted_at: Date;
@@ -47,5 +50,9 @@ export class Message extends BaseEntity {
     () => MentoringSession,
     (mentoringSession) => mentoringSession.messages,
   )
+  @JoinColumn({ name: 'mentoring_session_id' })
   mentoringSession: MentoringSession;
+
+  @OneToMany(() => ReadMessage, (readMessage) => readMessage.message)
+  readedUsers: ReadMessage[];
 }

@@ -1,16 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Message } from './entities/message.entity';
-import { Repository } from 'typeorm';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { SaveReadMessageDto } from './dto/save-read-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
+import { Message } from './entities/message.entity';
+import { ReadMessage } from './entities/read-message.entity';
+import { MentoringSession } from '@/mentoring-session/entities/mentoring-session.entity';
 
 @Injectable()
 export class MessagesService {
   constructor(
+    @InjectRepository(MentoringSession)
+    private readonly mentoringSessionRepository: Repository<MentoringSession>,
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
+    @InjectRepository(ReadMessage)
+    private readonly readMessageRepository: Repository<ReadMessage>,
   ) {}
 
   findAll() {
@@ -45,6 +52,72 @@ export class MessagesService {
     } catch (error) {}
   }
 
+  async readMessage(user_id: number, message_id: number) {
+    const qr =
+      this.readMessageRepository.manager.connection.createQueryRunner();
+    await qr.startTransaction();
+    try {
+      const dto = this.readMessageRepository.save({ user_id, message_id });
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST(error, 'bad request in readMessage');
+    }
+  }
+
+  async readSessionsMessage(user_id: number, session_id: number) {
+    const session = await this.mentoringSessionRepository.findOne({
+      where: {
+        id: session_id,
+      },
+      relations: {
+        messages: {
+          readedUsers: true,
+        },
+      },
+    });
+
+    const qr =
+      this.readMessageRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+
+    try {
+      const notReadedMessages = session.messages.filter((message) =>
+        message.readedUsers.every((readed) => readed.user_id !== user_id),
+      );
+      const readedUsers = notReadedMessages.map((message) => {
+        const readMessage = new ReadMessage();
+        readMessage.user_id = user_id;
+        readMessage.message_id = message.id;
+        return readMessage;
+      });
+      let dto: ReadMessage[] = [];
+      if (notReadedMessages.length > 0) {
+        console.log('notReadedMessages length', notReadedMessages.length);
+        dto = await this.readMessageRepository.save(readedUsers, {
+          transaction: true,
+        });
+      } else {
+        console.log('all readed');
+      }
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      console.log('error', error);
+      ApiResponseService.BAD_REQUEST(
+        error,
+        'bad request in readMessage sessions',
+      );
+    }
+  }
+
   async create(createMessageDto: CreateMessageDto) {
     const qr = this.messagesRepository.manager.connection.createQueryRunner();
 
@@ -62,6 +135,24 @@ export class MessagesService {
     }
   }
 
+  // async saveMessage(saveReadMessageDto: SaveReadMessageDto) {
+  //   const qr =
+  //     this.readMessageRepository.manager.connection.createQueryRunner();
+
+  //   await qr.startTransaction();
+
+  //   try {
+  //     const dto = await this.readMessageRepository.save(saveReadMessageDto);
+  //     await qr.commitTransaction();
+  //     await qr.release();
+  //     return dto;
+  //   } catch (error) {
+  //     await qr.rollbackTransaction();
+  //     await qr.release();
+  //     ApiResponseService.BAD_REQUEST(error, 'fail create messages');
+  //   }
+  // }
+
   async update(id: number, updateMessageDto: UpdateMessageDto) {
     const qr = this.messagesRepository.manager.connection.createQueryRunner();
     await this.findOne(id);
@@ -77,6 +168,13 @@ export class MessagesService {
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail update messages');
     }
+  }
+
+  async softRemove(message_id: number) {
+    await this.findOne(message_id);
+    return this.messagesRepository.update(message_id, {
+      is_deleted: true,
+    });
   }
 
   async remove(id: number) {
