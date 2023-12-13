@@ -8,12 +8,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Mentoring } from './entities/mentoring.entity';
 import { MentoringController } from './mentoring.controller';
 import { MentoringService } from './mentoring.service';
+import { MentoringSessionModule } from '@/mentoring-session/mentoring-session.module';
+import { MentoringSession } from '@/mentoring-session/entities/mentoring-session.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Mentoring, User]),
+    TypeOrmModule.forFeature([MentoringSession, Mentoring, User]),
     ConfigModule.forFeature(jwtConfig),
     AuthModule,
+    MentoringSessionModule,
   ],
   controllers: [MentoringController],
   providers: [MentoringService, SocketAuthGuard],

@@ -89,6 +89,7 @@ export class MentoringController {
     @Param('mentee_id', ParseIntPipe) mentee_id: number,
   ) {
     await this.mentoringService.removeBySessionId(session_id, mentee_id);
+    await this.mentoringService.removeEmptyMentoringSession(session_id);
     ApiResponseService.SUCCESS('success delete mentoring');
   }
 

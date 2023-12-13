@@ -5,10 +5,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Mentoring } from './entities/mentoring.entity';
 import { Repository } from 'typeorm';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { MentoringSession } from '@/mentoring-session/entities/mentoring-session.entity';
 
 @Injectable()
 export class MentoringService {
   constructor(
+    @InjectRepository(MentoringSession)
+    private readonly mentoringSessionRepository: Repository<MentoringSession>,
     @InjectRepository(Mentoring)
     private readonly mentoringRepository: Repository<Mentoring>,
   ) {}
@@ -22,12 +25,9 @@ export class MentoringService {
       where: { mentee_id: user_id },
       relations: {
         mentoringSession: {
+          mentorings: { user: { profiles: true } },
+          messages: { user: { profiles: true }, readedUsers: { user: true } },
           category: true,
-          mentorings: {
-            user: {
-              profiles: true,
-            },
-          },
         },
       },
     });
@@ -88,9 +88,39 @@ export class MentoringService {
           mentee_id,
         },
       });
-      return this.mentoringRepository.softDelete({ id: mentoring.id });
+      return mentoring.remove({ transaction: true });
     } catch (error) {
       ApiResponseService.NOT_FOUND(error, 'not found', [session_id, mentee_id]);
+    }
+  }
+
+  async removeEmptyMentoringSession(session_id: number) {
+    const session = await this.mentoringSessionRepository.findOne({
+      where: { id: session_id },
+      relations: {
+        mentorings: true,
+      },
+    });
+    if (session.mentorings.length === 0) {
+      const qr =
+        this.mentoringSessionRepository.manager.connection.createQueryRunner();
+      await qr.startTransaction();
+      try {
+        const dto = await session.remove({ transaction: true });
+        await qr.commitTransaction();
+        await qr.release();
+        return dto;
+      } catch (error) {
+        await qr.rollbackTransaction();
+        await qr.release();
+        ApiResponseService.BAD_REQUEST(
+          error,
+          'failed remove empty session',
+          session.id,
+        );
+      }
+    } else {
+      return null;
     }
   }
 
