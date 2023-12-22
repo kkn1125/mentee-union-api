@@ -175,7 +175,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `category_id` INT NOT NULL,
+  `category_id` INT NULL,
   `topic` VARCHAR(50) NOT NULL,
   `objective` VARCHAR(100) NOT NULL,
   `format` VARCHAR(30) NOT NULL,
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   CONSTRAINT `fk_mento-mentee-session_category1`
     FOREIGN KEY (`category_id`)
     REFERENCES `mentee-union`.`category` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE SET NULL
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -201,7 +201,6 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `mentee_id` INT NOT NULL,
   `mentoring_session_id` INT NOT NULL,
-  `token` VARCHAR(200) NOT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'waiting',
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -212,13 +211,13 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users2`
     FOREIGN KEY (`mentee_id`)
     REFERENCES `mentee-union`.`user` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_session1`
     FOREIGN KEY (`mentoring_session_id`)
     REFERENCES `mentee-union`.`mentoring_session` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -347,10 +346,11 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`message` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
+  `user_id` INT NULL,
   `mentoring_session_id` INT NOT NULL,
   `message` VARCHAR(300) NOT NULL,
   `is_top` TINYINT NOT NULL DEFAULT 0,
+  `is_deleted` TINYINT NOT NULL DEFAULT 0,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -360,13 +360,13 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`message` (
   CONSTRAINT `fk_table1_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_messages_mentoring_session1`
     FOREIGN KEY (`mentoring_session_id`)
     REFERENCES `mentee-union`.`mentoring_session` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -375,21 +375,38 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`read_message` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
+  `user_id` INT NULL,
   `message_id` INT NOT NULL,
-  PRIMARY KEY (`id`, `user_id`, `message_id`),
+  PRIMARY KEY (`id`, `message_id`),
   INDEX `fk_user_has_message_message1_idx` (`message_id` ASC) VISIBLE,
   INDEX `fk_user_has_message_user1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_user_has_message_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_user_has_message_message1`
     FOREIGN KEY (`message_id`)
     REFERENCES `mentee-union`.`message` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`board`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`board` (
+  `id` INT NOT NULL,
+  `type` VARCHAR(20) NOT NULL DEFAULT 'notice' COMMENT 'board type\n- faq\n- event\n- notice',
+  `title` VARCHAR(50) NOT NULL,
+  `content` LONGTEXT NOT NULL,
+  `visible` TINYINT NOT NULL DEFAULT 1,
+  `sequence` INT NOT NULL DEFAULT -1,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
 

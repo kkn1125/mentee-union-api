@@ -24,15 +24,15 @@ export class MessagesService {
     return this.messagesRepository.find();
   }
 
-  findAllByUserId(user_id: number) {
-    return this.messagesRepository.find({
-      where: { user_id },
-      relations: {
-        user: true,
-        mentoringSession: true,
-      },
-    });
-  }
+  // findAllByUserId(user_id: number) {
+  //   return this.messagesRepository.find({
+  //     where: { user_id },
+  //     relations: {
+  //       user: true,
+  //       mentoringSession: true,
+  //     },
+  //   });
+  // }
 
   async findOne(id: number) {
     try {
@@ -61,6 +61,44 @@ export class MessagesService {
       await qr.commitTransaction();
       await qr.release();
       return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST(error, 'bad request in readMessage');
+    }
+  }
+
+  async readSystemsMessage(session_id: number, message_id: number) {
+    const session = await this.mentoringSessionRepository.findOne({
+      where: { id: session_id },
+      relations: {
+        mentorings: {
+          user: true,
+        },
+        messages: true,
+      },
+    });
+    const qr =
+      this.readMessageRepository.manager.connection.createQueryRunner();
+    await qr.startTransaction();
+    try {
+      const dtos = await Promise.all(
+        session.mentorings.map((mentoring) =>
+          this.readMessageRepository.save(
+            {
+              user_id: mentoring.mentee_id,
+              message_id,
+            },
+            { transaction: true },
+          ),
+        ),
+      );
+      // for (const mentoring of session.mentorings) {
+      //   const dto = this.readMessageRepository.save({ user_id, message_id });
+      // }
+      await qr.commitTransaction();
+      await qr.release();
+      return dtos;
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();

@@ -19,8 +19,10 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  user_id: number;
+  // @Column({
+  //   nullable: true,
+  // })
+  // user_id: number;
 
   @Column()
   mentoring_session_id: number;

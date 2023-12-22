@@ -17,6 +17,7 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 import { Request } from 'express';
 import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { SystemSocketAuthGuard } from '@/auth/system-channel-auth.guard';
 
 @Controller('messages')
 export class MessagesController {
@@ -39,14 +40,14 @@ export class MessagesController {
     return this.messagesService.findMessagesInSession(mentoring_session_id);
   }
 
-  @UseGuards(SocketAuthGuard)
-  @Post('read/message/:message_id(\\d+)')
-  readMessage(
-    @Req() req: Request,
-    @Param('message_id', ParseIntPipe) message_id: number,
-  ) {
-    return this.messagesService.readMessage(req.channels.user_id, message_id);
-  }
+  // @UseGuards(SocketAuthGuard)
+  // @Post('read/message/:message_id(\\d+)')
+  // readMessage(
+  //   @Req() req: Request,
+  //   @Param('message_id', ParseIntPipe) message_id: number,
+  // ) {
+  //   return this.messagesService.readMessage(req.channels.user_id, message_id);
+  // }
 
   @UseGuards(SocketAuthGuard)
   @Post('read/session/:session_id(\\d+)')
@@ -72,9 +73,9 @@ export class MessagesController {
     @Body('session_id', ParseIntPipe) session_id: number,
     @Body('message') message: string,
   ) {
-    const userId = req.channels.user_id;
+    // const userId = req.channels.user_id;
     const messageDto = await this.messagesService.create({
-      user_id: userId,
+      // user_id: userId,
       message,
       mentoring_session_id: session_id,
     });
@@ -82,6 +83,25 @@ export class MessagesController {
       req.channels.user_id,
       messageDto.id,
     );
+  }
+
+  @UseGuards(SystemSocketAuthGuard)
+  @Post('save/session/:session_id(\\d+)')
+  async saveSystemMessage(
+    @Req() req: Request,
+    @Param('session_id', ParseIntPipe) session_id: number,
+    @Body('message') message: string,
+  ) {
+    const messageDto = await this.messagesService.create({
+      // user_id: null,
+      message,
+      mentoring_session_id: session_id,
+    });
+    return this.messagesService.readSystemsMessage(session_id, messageDto.id);
+    // return this.messagesService.readMessage(
+    //   req.channels.user_id,
+    //   messageDto.id,
+    // );
   }
 
   @Put(':id')

@@ -17,10 +17,18 @@ insert into
         ("독서", "독서"),
         ("그림", "그림"),
         ("자기계발", "자기계발");
-        
+
+desc profile;
+#alter table profile add column created_at timestamp not null default current_timestamp after origin_name;
+#alter table profile add column updated_at timestamp not null default current_timestamp on update current_timestamp after created_at;
 desc forum;
 desc seminar;
-
+select * from user;
+select * from mentoring_session;
+select * from mentoring;
+select * from message;
+select * from read_message;
+select * from mentoring where mentoring_session_id = 1;
 insert into forum (user_id, title, content) values
 (2, "test forum1", "test forum content1"),(2, "test forum2", "test forum content2"),
 (2, "test forum3", "test forum content3"),(2, "test forum5", "test forum content5");

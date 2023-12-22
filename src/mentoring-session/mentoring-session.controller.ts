@@ -16,6 +16,7 @@ import { UpdateMentoringSessionDto } from './dto/update-mentoring-session.dto';
 import { MentoringSessionService } from './mentoring-session.service';
 import { Request } from 'express';
 import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
+import { SystemSocketAuthGuard } from '@/auth/system-channel-auth.guard';
 
 @Controller('mentoring-session')
 export class MentoringSessionController {
@@ -45,6 +46,12 @@ export class MentoringSessionController {
   @UseGuards(SocketAuthGuard)
   @Get(':id(\\d+)')
   findOne(@Param('id') id: string) {
+    return this.mentoringSessionService.findOne(+id);
+  }
+
+  @UseGuards(SystemSocketAuthGuard)
+  @Get('session/:id(\\d+)')
+  findOneBySessionId(@Param('id') id: string) {
     return this.mentoringSessionService.findOne(+id);
   }
 
