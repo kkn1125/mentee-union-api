@@ -6,10 +6,32 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '@/auth/auth.module';
 import { User } from '@/users/entities/user.entity';
 import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
+import { MentoringSessionGateway } from './mentoring-session.gateway';
+import { Message } from '@/messages/entities/message.entity';
+import { Mentoring } from '@/mentoring/entities/mentoring.entity';
+import { MentoringSessionGatewayService } from './mentoring-session-gateway.service';
+import { MessagesModule } from '@/messages/messages.module';
+import { MessagesService } from '@/messages/messages.service';
+import { ReadMessage } from '@/messages/entities/read-message.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MentoringSession, User]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      MentoringSession,
+      Mentoring,
+      User,
+      Message,
+      ReadMessage,
+    ]),
+    AuthModule,
+  ],
   controllers: [MentoringSessionController],
-  providers: [MentoringSessionService, SocketAuthGuard],
+  providers: [
+    MentoringSessionService,
+    SocketAuthGuard,
+    MessagesService,
+    MentoringSessionGateway,
+    MentoringSessionGatewayService,
+  ],
 })
 export class MentoringSessionModule {}

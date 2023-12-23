@@ -157,10 +157,11 @@ export class MessagesService {
   }
 
   async create(createMessageDto: CreateMessageDto) {
+    console.log('check createMessageDto', createMessageDto);
     const qr = this.messagesRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
-
+    console.log('check createMessageDto', createMessageDto);
     try {
       const dto = await this.messagesRepository.save(createMessageDto);
       await qr.commitTransaction();

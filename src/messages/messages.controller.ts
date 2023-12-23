@@ -73,9 +73,9 @@ export class MessagesController {
     @Body('session_id', ParseIntPipe) session_id: number,
     @Body('message') message: string,
   ) {
-    // const userId = req.channels.user_id;
+    const userId = req.channels.user_id;
     const messageDto = await this.messagesService.create({
-      // user_id: userId,
+      user_id: userId,
       message,
       mentoring_session_id: session_id,
     });
@@ -93,7 +93,7 @@ export class MessagesController {
     @Body('message') message: string,
   ) {
     const messageDto = await this.messagesService.create({
-      // user_id: null,
+      user_id: null,
       message,
       mentoring_session_id: session_id,
     });

@@ -20,4 +20,8 @@ export class CreateMentoringSessionDto {
   @IsNotEmpty()
   @IsString()
   note: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  limit: number;
 }

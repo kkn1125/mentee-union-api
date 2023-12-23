@@ -1,4 +1,5 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { Mentoring } from '@/mentoring/entities/mentoring.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
@@ -7,10 +8,12 @@ import { UpdateMentoringSessionDto } from './dto/update-mentoring-session.dto';
 import { MentoringSession } from './entities/mentoring-session.entity';
 
 @Injectable()
-export class MentoringSessionService {
+export class MentoringSessionGatewayService {
   constructor(
     @InjectRepository(MentoringSession)
     private readonly mentoringSessionRepository: Repository<MentoringSession>,
+    @InjectRepository(Mentoring)
+    private readonly mentoringRepository: Repository<Mentoring>,
   ) {}
 
   findAll() {
@@ -19,6 +22,11 @@ export class MentoringSessionService {
         mentorings: { user: { profiles: true } },
         messages: { user: { profiles: true }, readedUsers: true },
         category: true,
+      },
+      order: {
+        messages: {
+          id: 'asc',
+        },
       },
     });
   }
@@ -30,6 +38,11 @@ export class MentoringSessionService {
         mentorings: { user: { profiles: true } },
         messages: { user: { profiles: true }, readedUsers: true },
         category: true,
+      },
+      order: {
+        messages: {
+          id: 'asc',
+        },
       },
     });
   }
@@ -47,6 +60,20 @@ export class MentoringSessionService {
         mentorings: { user: { profiles: true } },
         messages: { user: { profiles: true }, readedUsers: true },
         category: true,
+      },
+      order: {
+        messages: {
+          id: 'asc',
+        },
+      },
+    });
+  }
+
+  findEnteredMentees(session_id: number) {
+    return this.mentoringRepository.find({
+      where: {
+        mentoring_session_id: session_id,
+        status: 'enter',
       },
     });
   }
@@ -71,9 +98,76 @@ export class MentoringSessionService {
     }
   }
 
-  async create(createMentoringSessionDto: CreateMentoringSessionDto) {
+  async join(session_id: number, user_id: number) {
+    const mentoring = await this.mentoringRepository.findOne({
+      where: {
+        mentoring_session_id: session_id,
+        mentee_id: user_id,
+      },
+      relations: {
+        mentoringSession: {
+          mentorings: { user: { profiles: true } },
+          messages: { user: { profiles: true }, readedUsers: true },
+          category: true,
+        },
+      },
+      order: {
+        mentoringSession: {
+          messages: {
+            id: 'asc',
+          },
+        },
+      },
+    });
+    const qr = this.mentoringRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+    try {
+      mentoring.status = 'enter';
+      const dto = await mentoring.save({ transaction: true });
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+    }
+  }
+
+  async out(session_id: number, user_id: number) {
+    const mentoring = await this.mentoringRepository.findOne({
+      where: {
+        mentoring_session_id: session_id,
+        mentee_id: user_id,
+      },
+      relations: {
+        mentoringSession: {
+          mentorings: { user: { profiles: true } },
+          messages: { user: { profiles: true }, readedUsers: true },
+          category: true,
+        },
+      },
+    });
+    const qr = this.mentoringRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+    try {
+      mentoring.status = 'waitlist';
+      const dto = await mentoring.save({ transaction: true });
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+    }
+  }
+
+  async createRoom(createMentoringSessionDto: CreateMentoringSessionDto) {
     const qr =
       this.mentoringSessionRepository.manager.connection.createQueryRunner();
+
+    // let dto: MentoringSession;
 
     await qr.startTransaction();
 
@@ -84,14 +178,46 @@ export class MentoringSessionService {
           transaction: true,
         },
       );
+
       console.log('mentoringsession dto', dto);
       await qr.commitTransaction();
       await qr.release();
       return dto;
     } catch (error) {
+      console.log('mentoring-session create error', error);
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail create mentoring session');
+    }
+  }
+
+  async createMentoring(user_id: number, session_id: number) {
+    const mentoringQr =
+      this.mentoringRepository.manager.connection.createQueryRunner();
+
+    await mentoringQr.startTransaction();
+
+    try {
+      await this.mentoringRepository.save(
+        {
+          mentee_id: user_id,
+          mentoring_session_id: session_id,
+          status: 'waiting',
+        },
+        {
+          transaction: true,
+        },
+      );
+      await mentoringQr.commitTransaction();
+      await mentoringQr.release();
+
+      const newDto = await this.findOne(session_id);
+      return newDto;
+    } catch (error) {
+      console.log('mentoring create error', error);
+      await mentoringQr.rollbackTransaction();
+      await mentoringQr.release();
+      ApiResponseService.BAD_REQUEST(error, 'fail create mentoring');
     }
   }
 
