@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -16,29 +17,53 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
-    const token = ctx
-      .getRequest()
-      .headers['authorization']?.slice('Bearer '.length);
+    const ws = context.switchToWs();
+    if (ws.getClient() instanceof Socket) {
+      const token = ws.getClient().handshake.auth.token;
+      console.log('🛠️ authorization check', token);
 
-    console.log('🛠️ authorization check', token);
+      if (!token) ApiResponseService.UNAUTHORIZED('no token');
 
-    if (!token) ApiResponseService.UNAUTHORIZED('no token');
+      try {
+        const value = await this.jwtService.verifyAsync(token, {
+          secret: this.configService.get<string>('jwt.privkey'),
+        });
+        console.log('🛠️ check verified value', value);
+        const req = ws.getClient() as Request;
+        value['userId'] = value.sub;
+        delete value['sub'];
+        req['user'] = value;
 
-    try {
-      const value = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('jwt.privkey'),
-      });
-      console.log('🛠️ check verified value', value);
+        return true;
+      } catch (error) {
+        console.log('🐛 check error:', error);
+        ApiResponseService.UNAUTHORIZED(error);
+      }
+    } else {
+      const token = ctx
+        .getRequest()
+        .headers['authorization']?.slice('Bearer '.length);
 
-      const req = ctx.getRequest() as Request;
-      value['userId'] = value.sub;
-      delete value['sub'];
-      req['user'] = value;
+      console.log('🛠️ authorization check', token);
 
-      return true;
-    } catch (error) {
-      console.log('🐛 check error:', error);
-      ApiResponseService.UNAUTHORIZED(error);
+      if (!token) ApiResponseService.UNAUTHORIZED('no token');
+
+      try {
+        const value = await this.jwtService.verifyAsync(token, {
+          secret: this.configService.get<string>('jwt.privkey'),
+        });
+        console.log('🛠️ check verified value', value);
+
+        const req = ctx.getRequest() as Request;
+        value['userId'] = value.sub;
+        delete value['sub'];
+        req['user'] = value;
+
+        return true;
+      } catch (error) {
+        console.log('🐛 check error:', error);
+        ApiResponseService.UNAUTHORIZED(error);
+      }
     }
 
     // value
