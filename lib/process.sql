@@ -18,11 +18,17 @@ insert into
         ("그림", "그림"),
         ("자기계발", "자기계발");
 
-desc profile;
+#alter table mentoring modify column status varchar(45) default 'waitlist';
+desc message;
+#delete from mentoring_session;
+#delete from mentoring;
+select * from mentoring_session;
+select * from mentoring;
 #alter table profile add column created_at timestamp not null default current_timestamp after origin_name;
 #alter table profile add column updated_at timestamp not null default current_timestamp on update current_timestamp after created_at;
 desc forum;
 desc seminar;
+select * from message;
 select * from user;
 select * from mentoring_session;
 select * from mentoring;
