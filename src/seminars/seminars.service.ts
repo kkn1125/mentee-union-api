@@ -44,7 +44,19 @@ export class SeminarsService {
   async findOne(id: number) {
     // return `This action returns a #${id} seminar`;
     try {
-      return await this.seminarRepository.findOne({ where: { id } });
+      return await this.seminarRepository.findOne({
+        where: { id },
+        relations: {
+          user: {
+            profiles: true,
+          },
+          category: true,
+          seminarParticipants: {
+            seminar: true,
+            user: true,
+          },
+        },
+      });
     } catch (error) {
       ApiResponseService.NOT_FOUND(error, `not found seminar ${id}`);
     }

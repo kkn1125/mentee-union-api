@@ -37,6 +37,7 @@ export class SeminarParticipant extends BaseEntity {
 
   @ManyToOne(() => Seminar, (seminar) => seminar.seminarParticipants)
   seminar: Seminar;
+
   @ManyToOne(() => User, (user) => user.seminarParticipants)
   user: User;
 }
