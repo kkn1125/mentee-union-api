@@ -31,6 +31,13 @@ export class MentoringSessionGatewayService {
     });
   }
 
+  updateStausByUserId(user_id: number, status: string = 'waitlist') {
+    return this.mentoringRepository.update(
+      { mentee_id: user_id },
+      { status: status },
+    );
+  }
+
   findAllByUser(user_id: number) {
     return this.mentoringSessionRepository.find({
       where: { mentorings: { mentee_id: user_id } },
@@ -98,32 +105,19 @@ export class MentoringSessionGatewayService {
     }
   }
 
-  async join(session_id: number, user_id: number) {
+  async updateStatus(
+    user_id: number,
+    session_id: number,
+    status: string = 'waitlist',
+  ) {
     const mentoring = await this.mentoringRepository.findOne({
-      where: {
-        mentoring_session_id: session_id,
-        mentee_id: user_id,
-      },
-      relations: {
-        mentoringSession: {
-          mentorings: { user: { profiles: true } },
-          messages: { user: { profiles: true }, readedUsers: true },
-          category: true,
-        },
-      },
-      order: {
-        mentoringSession: {
-          messages: {
-            id: 'asc',
-          },
-        },
-      },
+      where: { mentoring_session_id: session_id, mentee_id: user_id },
     });
     const qr = this.mentoringRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
     try {
-      mentoring.status = 'enter';
+      mentoring.status = status;
       const dto = await mentoring.save({ transaction: true });
       await qr.commitTransaction();
       await qr.release();
@@ -191,18 +185,22 @@ export class MentoringSessionGatewayService {
     }
   }
 
-  async createMentoring(user_id: number, session_id: number) {
+  async createMentoring(
+    user_id: number,
+    session_id: number,
+    status: string = 'waitlist',
+  ) {
     const mentoringQr =
       this.mentoringRepository.manager.connection.createQueryRunner();
 
     await mentoringQr.startTransaction();
 
     try {
-      await this.mentoringRepository.save(
+      const dto = await this.mentoringRepository.save(
         {
           mentee_id: user_id,
           mentoring_session_id: session_id,
-          status: 'waiting',
+          status: status,
         },
         {
           transaction: true,
@@ -211,8 +209,7 @@ export class MentoringSessionGatewayService {
       await mentoringQr.commitTransaction();
       await mentoringQr.release();
 
-      const newDto = await this.findOne(session_id);
-      return newDto;
+      return dto;
     } catch (error) {
       console.log('mentoring create error', error);
       await mentoringQr.rollbackTransaction();
@@ -239,6 +236,13 @@ export class MentoringSessionGatewayService {
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail update mentoring session');
     }
+  }
+
+  removeMentoring(user_id: number, session_id: number) {
+    return this.mentoringRepository.delete({
+      mentee_id: user_id,
+      mentoring_session_id: session_id,
+    });
   }
 
   async remove(id: number) {

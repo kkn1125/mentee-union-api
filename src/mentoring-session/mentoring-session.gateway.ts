@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import { MessagesService } from '@/messages/messages.service';
+import { ApiResponseService } from '@/api-response/api-response.service';
 
 @WebSocketGateway({
   cors: {
@@ -29,88 +30,189 @@ export class MentoringSessionGateway {
   ) {}
 
   @UseGuards(JwtAuthGuard)
-  @SubscribeMessage('createMentoringSession')
+  @SubscribeMessage('initialize')
+  async initialize(@ConnectedSocket() client: CustomSocket) {
+    await this.mentoringSessionGatewayService.updateStausByUserId(
+      client.user.userId,
+    );
+    const sessionList = await this.mentoringSessionGatewayService.findAll();
+    const userData = client.user;
+    client.emit('sessionList', { sessionList });
+    client.emit('userData', { user: userData });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @SubscribeMessage('createSession')
   async create(
     @ConnectedSocket() client: CustomSocket,
     @MessageBody() createMentoringSessionDto: CreateMentoringSessionDto,
   ) {
-    const mentoringSession =
-      await this.mentoringSessionGatewayService.createRoom(
-        createMentoringSessionDto,
-      );
+    const session = await this.mentoringSessionGatewayService.createRoom(
+      createMentoringSessionDto,
+    );
+
     await this.mentoringSessionGatewayService.createMentoring(
       client.user.userId,
-      mentoringSession.id,
+      session.id,
+      'enter',
     );
-    client.join(mentoringSession.id + mentoringSession.topic);
-    await this.mentoringSessionGatewayService.join(
-      mentoringSession.id,
-      client.user.userId,
+
+    await this.messagesService.create({
+      mentoring_session_id: session.id,
+      message: client.user.username + '님이 입장했습니다.',
+      user_id: null,
+    });
+
+    const newSession = await this.mentoringSessionGatewayService.findOne(
+      session.id,
     );
-    return mentoringSession;
+
+    this.server.emit('updateSession', { session: newSession });
+
+    return {
+      event: 'nowSession',
+      data: {
+        session: newSession,
+      },
+    };
   }
 
   @UseGuards(JwtAuthGuard)
-  @SubscribeMessage('findAllMentoringSession')
-  async findAll(
-    @ConnectedSocket()
-    client: CustomSocket,
-  ) {
-    const sessions = await this.mentoringSessionGatewayService.findAll();
-    for (const session of sessions) {
-      await this.mentoringSessionGatewayService.out(
-        session.id,
-        client.user.userId,
-      );
-    }
-    const user = client.user;
-    return { sessions, user };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @SubscribeMessage('findAllMyMentoringSession')
-  async findAllMySessions(
-    @ConnectedSocket()
-    client: CustomSocket,
-  ) {
-    const sessions = await this.mentoringSessionGatewayService.findAllByUser(
-      client.user.userId,
-    );
-    for (const session of sessions) {
-      client.join(session.id + session.topic);
-    }
-    return sessions;
-  }
-
-  @SubscribeMessage('findOneMentoringSession')
-  findOne(@MessageBody() id: number) {
-    return this.mentoringSessionGatewayService.findOne(id);
-  }
-
-  @SubscribeMessage('updateMentoringSession')
-  update(@MessageBody() updateMentoringSessionDto: UpdateMentoringSessionDto) {
-    return this.mentoringSessionGatewayService.update(
-      updateMentoringSessionDto.id,
-      updateMentoringSessionDto,
-    );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @SubscribeMessage('message')
-  async saveMessage(
+  @SubscribeMessage('joinSession')
+  async join(
     @ConnectedSocket() client: CustomSocket,
     @MessageBody('session_id') session_id: number,
-    @MessageBody('topic') topic: string,
-    @MessageBody('message') message: string,
   ) {
-    console.log('check', session_id, message, client.user.userId);
+    /* 세션 수용 인원 제한 체크 */
+    const session =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+    if (session.limit <= session.mentorings.length) {
+      return {
+        event: 'reject',
+        data: {
+          message: 'Session limit exceeded',
+        },
+      };
+    }
+
+    /* 멘토링 생성 */
+    await this.mentoringSessionGatewayService.createMentoring(
+      client.user.userId,
+      session_id,
+      'enter',
+    );
+
+    /* 입장 메세지 */
     await this.messagesService.create({
       mentoring_session_id: session_id,
-      message,
-      user_id: client.user.userId,
+      message: client.user.username + '님이 입장했습니다.',
+      user_id: null,
     });
+
+    /* 멘토링 메세지 읽음 표시 */
     const enteredMentorings =
       await this.mentoringSessionGatewayService.findEnteredMentees(session_id);
+
+    for (const mentoring of enteredMentorings) {
+      await this.messagesService.readSessionsMessage(
+        mentoring.mentee_id,
+        session_id,
+      );
+    }
+
+    const newSession =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+
+    this.server.emit('updateSession', { session: newSession });
+
+    return {
+      event: 'nowSession',
+      data: {
+        session: newSession,
+      },
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @SubscribeMessage('outSession')
+  async out(
+    @ConnectedSocket() client: CustomSocket,
+    @MessageBody('session_id') session_id: number,
+  ) {
+    /* 멘토링 제거 */
+    await this.mentoringSessionGatewayService.removeMentoring(
+      client.user.userId,
+      session_id,
+    );
+
+    /* 세션 인원 0명일 시 자동 제거, 아닐 시 잔여 인원에게 퇴장 메세지 */
+    const session =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+    if (session.mentorings.length === 0) {
+      await session.remove();
+    } else {
+      await this.messagesService.create({
+        mentoring_session_id: session_id,
+        message: client.user.username + '님이 퇴장했습니다.',
+        user_id: null,
+      });
+    }
+
+    const newSession =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+
+    this.server.emit('updateSession', { session: newSession });
+
+    return {
+      event: 'nowSession',
+      data: {
+        session: null,
+      },
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @SubscribeMessage('waitlist')
+  async waitlist(
+    @ConnectedSocket() client: CustomSocket,
+    @MessageBody('session_id') session_id: number,
+  ) {
+    /* 해당 사용자 대기열로 모든 세션 상태 변경 */
+    await this.mentoringSessionGatewayService.updateStausByUserId(
+      client.user.userId,
+      'waitlist',
+    );
+
+    const session =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+
+    this.server.emit('updateSession', { session: session });
+
+    return {
+      event: 'nowSession',
+      data: {
+        session: null,
+      },
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @SubscribeMessage('changeSession')
+  async change(
+    @ConnectedSocket() client: CustomSocket,
+    @MessageBody('session_id') session_id: number,
+  ) {
+    /* 해당 세션의 사용자 멘토링 상태 enter로 변경 */
+    await this.mentoringSessionGatewayService.updateStatus(
+      client.user.userId,
+      session_id,
+      'enter',
+    );
+
+    /* 멘토링 메세지 읽음 표시 */
+    const enteredMentorings =
+      await this.mentoringSessionGatewayService.findEnteredMentees(session_id);
+
     for (const mentoring of enteredMentorings) {
       await this.messagesService.readSessionsMessage(
         mentoring.mentee_id,
@@ -121,85 +223,44 @@ export class MentoringSessionGateway {
     const session =
       await this.mentoringSessionGatewayService.findOne(session_id);
 
-    this.server.to(session_id + topic).emit('updateSession', { session });
-    // return this.mentoringSessionGatewayService.update(
-    //   updateMentoringSessionDto.id,
-    //   updateMentoringSessionDto,
-    // );
-  }
+    this.server.emit('updateSession', { session: session });
 
-  @UseGuards(JwtAuthGuard)
-  @SubscribeMessage('joinRoom')
-  async joinRoom(
-    @ConnectedSocket()
-    client: CustomSocket,
-    @MessageBody('session_id') session_id: number,
-  ) {
-    const session = await this.mentoringSessionGatewayService.createMentoring(
-      client.user.userId,
-      session_id,
-    );
-
-    const mentoring = await this.mentoringSessionGatewayService.join(
-      session_id,
-      client.user.userId,
-    );
-
-    client.join(session_id + session.topic);
-
-    await this.messagesService.readSessionsMessage(
-      mentoring.mentee_id,
-      session_id,
-    );
-
-    // client
-    //   .to(room.mentoringSession.id + room.mentoringSession.topic)
-    //   .emit('message', { room });
     return {
-      event: 'enterRoom',
+      event: 'nowSession',
       data: {
-        mentoring,
-        session: mentoring.mentoringSession,
+        session: session,
       },
     };
   }
 
   @UseGuards(JwtAuthGuard)
-  @SubscribeMessage('enterRoom')
-  async changeRoom(
-    @ConnectedSocket()
-    client: CustomSocket,
+  @SubscribeMessage('saveMessage')
+  async saveMessage(
+    @ConnectedSocket() client: CustomSocket,
     @MessageBody('session_id') session_id: number,
+    @MessageBody('message') message: string,
   ) {
-    const mentoring = await this.mentoringSessionGatewayService.join(
-      session_id,
-      client.user.userId,
-    );
+    /* 메세지 생성 */
+    await this.messagesService.create({
+      mentoring_session_id: session_id,
+      message,
+      user_id: client.user.userId,
+    });
 
-    client.join(session_id + mentoring.mentoringSession.topic);
+    /* 멘토링 메세지 읽음 표시 */
+    const enteredMentorings =
+      await this.mentoringSessionGatewayService.findEnteredMentees(session_id);
 
-    await this.messagesService.readSessionsMessage(
-      mentoring.mentee_id,
-      session_id,
-    );
+    for (const mentoring of enteredMentorings) {
+      await this.messagesService.readSessionsMessage(
+        mentoring.mentee_id,
+        session_id,
+      );
+    }
 
     const session =
       await this.mentoringSessionGatewayService.findOne(session_id);
 
-    // client
-    //   .to(room.mentoringSession.id + room.mentoringSession.topic)
-    //   .emit('message', { room });
-    return {
-      event: 'enterRoom',
-      data: {
-        mentoring,
-        session,
-      },
-    };
-  }
-
-  @SubscribeMessage('removeMentoringSession')
-  remove(@MessageBody() id: number) {
-    return this.mentoringSessionGatewayService.remove(id);
+    this.server.emit('updateSession', { session: session });
   }
 }
