@@ -23,7 +23,12 @@ export class ForumsService {
 
   async findOne(id: number) {
     try {
-      return await this.forumRepository.findOneOrFail({ where: { id } });
+      return await this.forumRepository.findOneOrFail({
+        where: { id },
+        relations: {
+          user: { profiles: true },
+        },
+      });
     } catch (error) {
       ApiResponseService.NOT_FOUND(error, `not found forum ${id}`);
     }

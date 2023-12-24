@@ -73,27 +73,34 @@ export class SeminarsController {
     return this.seminarsService.remove(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('join')
   async joinSeminar(
+    @Req() req: Request,
     @Body('seminar_id', ParseIntPipe) seminar_id: number,
-    @Body('user_id', ParseIntPipe) user_id: number,
   ) {
     const isExists = await this.seminarsService.isExistsRevertedParticipants(
       seminar_id,
-      user_id,
+      req.user.userId,
     );
     /* 이미 신청한 후 취소한 이력이 있으면 다시 되살려서 신청처리 */
     if (isExists && isExists.deleted_at !== null) {
       await this.seminarsService.restoreJoinSeminar(isExists);
-      ApiResponseService.SUCCESS('success restore exists seminar participants');
+      // ApiResponseService.SUCCESS('success restore exists seminar participants');
+      return {
+        message: 'success restore exists seminar participants',
+      };
     } else {
-      await this.seminarsService.joinSeminar(seminar_id, user_id);
-      ApiResponseService.SUCCESS('success join seminar');
+      await this.seminarsService.joinSeminar(seminar_id, req.user.userId);
+      // ApiResponseService.SUCCESS('success join seminar');
+      return {
+        message: 'success join seminar',
+      };
     }
   }
 
-  @Post('confirm')
   @UseGuards(JwtAuthGuard)
+  @Post('confirm')
   async confirmJoinSeminar(
     @Req() req: Request,
     @Body('seminar_id', ParseIntPipe) seminar_id,
@@ -109,13 +116,16 @@ export class SeminarsController {
     }
   }
 
-  @Delete('cancel')
   @UseGuards(JwtAuthGuard)
+  @Delete('cancel')
   async cancelJoinSeminar(
     @Req() req: Request,
     @Body('seminar_id', ParseIntPipe) seminar_id: number,
   ) {
     await this.seminarsService.cancelJoinSeminar(seminar_id, req.user.userId);
-    ApiResponseService.SUCCESS('success cancel join seminar');
+    // ApiResponseService.SUCCESS('success cancel join seminar');
+    return {
+      message: 'success cancel join seminar',
+    };
   }
 }

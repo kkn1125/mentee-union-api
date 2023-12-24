@@ -263,4 +263,31 @@ export class MentoringSessionGateway {
 
     this.server.emit('updateSession', { session: session });
   }
+
+  @UseGuards(JwtAuthGuard)
+  @SubscribeMessage('deleteMessage')
+  async deleteMessage(
+    @ConnectedSocket() client: CustomSocket,
+    @MessageBody('session_id') session_id: number,
+    @MessageBody('message_id') message_id: number,
+  ) {
+    /* 메세지 삭제 */
+    await this.messagesService.softRemove(message_id);
+
+    /* 멘토링 메세지 읽음 표시 */
+    const enteredMentorings =
+      await this.mentoringSessionGatewayService.findEnteredMentees(session_id);
+
+    for (const mentoring of enteredMentorings) {
+      await this.messagesService.readSessionsMessage(
+        mentoring.mentee_id,
+        session_id,
+      );
+    }
+
+    const session =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+
+    this.server.emit('updateSession', { session: session });
+  }
 }
