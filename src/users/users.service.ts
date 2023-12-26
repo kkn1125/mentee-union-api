@@ -85,12 +85,27 @@ export class UsersService {
           'updated_at',
         ],
         relations: {
-          seminars: true,
-          seminarParticipants: true,
+          seminars: {
+            user: true,
+          },
+          seminarParticipants: {
+            seminar: {
+              category: true,
+              user: {
+                profiles: true,
+              },
+            },
+          },
           givers: true,
           receivers: true,
           grade: true,
           profiles: true,
+          mentorings: {
+            mentoringSession: {
+              messages: true,
+              category: true,
+            },
+          },
         },
       });
     } catch (error) {}
