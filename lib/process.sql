@@ -19,7 +19,35 @@ insert into
         ("자기계발", "자기계발");
 
 #alter table mentoring modify column status varchar(45) default 'waitlist';
-desc message;
+desc mentoring_session;
+select * from information_schema.tables where table_schema = 'mentee-union' and table_name = 'category';
+show table status;
+desc category;
+create index complex_id_name_index on category (id,name);
+analyze table category;
+explain analyze table category;
+select * from category;
+drop index complext_id_name_index on category;
+select * from category where name="it";
+show index from category;
+explain category;
+show indexes from category;
+select * from seminar;
+select * from seminar_participant;
+explain select * from category;
+explain select * from category use index (complex_id_name_index) where name="it" and id = 1;
+explain select * from category use index (primary) where name="it";
+explain select * from category where id=1;
+explain select * from category use index () where id=1;
+explain select * from category use index (primary) where id=1;
+
+
+show index from mentoring_session;
+select * from mentoring_session use index (`fk_mento-mentee-session_category1_idx`);
+select * from mentoring_session;
+
+#alter table mentoring_session add column password varchar(150) null after `limit`;
+#alter table mentoring_session add column is_private tinyint not null default 0 after `password`;
 #delete from mentoring_session;
 #delete from mentoring;
 select * from mentoring_session;
