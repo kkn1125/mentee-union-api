@@ -39,6 +39,7 @@ export class MentoringSessionGateway {
     const userData = client.user;
     client.emit('sessionList', { sessionList });
     client.emit('userData', { user: userData });
+    client.emit('nowSession', { session: null });
   }
 
   @UseGuards(JwtAuthGuard)
