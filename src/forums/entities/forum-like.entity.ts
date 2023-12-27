@@ -9,14 +9,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ForumLike } from './forum-like.entity';
+import { Forum } from './forum.entity';
 
 @Entity()
-export class Forum extends BaseEntity {
+export class ForumLike extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -24,13 +23,7 @@ export class Forum extends BaseEntity {
   user_id: number;
 
   @Column()
-  title: string;
-
-  @Column()
-  content: string;
-
-  @Column()
-  view_count: number;
+  forum_id: number;
 
   @DeleteDateColumn()
   deleted_at: string;
@@ -41,9 +34,8 @@ export class Forum extends BaseEntity {
   @UpdateDateColumn()
   updated_at: string;
 
-  @ManyToOne(() => User, (user) => user.forums)
+  @ManyToOne(() => User, (user) => user.forumLikes)
   user: User;
-
-  @OneToMany(() => ForumLike, (forumLike) => forumLike.forum)
-  forumLikes: ForumLike[];
+  @ManyToOne(() => Forum, (forum) => forum.forumLikes)
+  forum: Forum;
 }

@@ -96,6 +96,7 @@ export class UsersService {
               },
             },
           },
+          forums: true,
           givers: true,
           receivers: true,
           grade: true,
@@ -104,6 +105,12 @@ export class UsersService {
             mentoringSession: {
               messages: true,
               category: true,
+            },
+          },
+          forumLikes: {
+            user: { profiles: true },
+            forum: {
+              user: true,
             },
           },
         },

@@ -10,6 +10,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -18,6 +19,7 @@ import {
 import { Profile } from './profile.entity';
 import { UserRecommend } from './user-recommend.entity';
 import { ReadMessage } from '@/messages/entities/read-message.entity';
+import { ForumLike } from '@/forums/entities/forum-like.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -118,4 +120,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => ReadMessage, (readMessage) => readMessage.user)
   readedMessages: ReadMessage[];
+
+  @OneToMany(() => ForumLike, (forumLike) => forumLike.user)
+  forumLikes: ForumLike[];
 }

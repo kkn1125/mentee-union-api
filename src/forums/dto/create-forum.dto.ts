@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsEmpty,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -8,9 +9,8 @@ import {
 } from 'class-validator';
 
 export class CreateForumDto {
-  @IsNotEmpty()
   @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @IsEmpty()
   user_id: number;
 
   @IsNotEmpty()
