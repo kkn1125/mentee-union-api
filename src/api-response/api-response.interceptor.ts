@@ -18,7 +18,7 @@ export class ApiResponseInterceptor implements NestInterceptor {
     console.log('인터셉터');
     return next.handle().pipe(
       map((data) => {
-        console.log('인터셉터 데이터', data);
+        // console.log('인터셉터 데이터', data);
         return this.apiResponseService.output({
           ok: response.statusCode === 200 || response.statusCode === 201,
           code: response.statusCode,
