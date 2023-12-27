@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum` (
   `user_id` INT NOT NULL,
   `title` VARCHAR(50) NOT NULL,
   `content` LONGTEXT NOT NULL,
+  `view_count` INT NOT NULL DEFAULT 0,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -398,6 +399,32 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`board` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mentee-union`.`forum_like`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`forum_like` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `forum_id` INT NOT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `fk_user_has_forum_forum1_idx` (`forum_id` ASC) INVISIBLE,
+  INDEX `fk_user_has_forum_user1_idx` (`user_id` ASC) VISIBLE,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_user_has_forum_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_user_has_forum_forum1`
+    FOREIGN KEY (`forum_id`)
+    REFERENCES `mentee-union`.`forum` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 

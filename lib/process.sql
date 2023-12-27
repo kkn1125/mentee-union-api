@@ -33,6 +33,16 @@ show index from category;
 explain category;
 show indexes from category;
 select * from seminar;
+select * from grade;
+desc grade;
+
+update grade set name = "mentee0", description = "초기 멘티 등급입니다. 멘토링 커뮤니티에 적응하고 기본적인 활동을 시작하는 단계입니다." where id = 1;
+update grade set name = "mentee1", description = "경험이 더 많은 멘티 등급입니다. 멘토링 활동을 통한 성장과 경험을 쌓는 단계입니다." where id = 2;
+update grade set name = "mentor0", description = "신규 멘토 등급니다. 멘토로서의 첫 경험을 쌓고, 멘티들에게 지식을 전달하는 단계입니다." where id = 3;
+update grade set name = "mentor1", description = "경험이 더 많은 멘토 등급입니다. 보다 전문적인 멘토링 제공 및 커뮤니티 내 리더십을 강화하는 단계입니다." where id = 4;
+update grade set name = "mentor2", description = "고급 멘토 등급입니다. 멘토링 프로그램 개선에 기여하고 신규 멘토 육성에 노력하는 단계입니다." where id = 5;
+select * from forum_like;
+alter table forum_like add column deleted_at timestamp default null, add column created_at timestamp not null default current_timestamp(), add column updated_at timestamp not null default current_timestamp() on update current_timestamp();
 select * from seminar_participant;
 explain select * from category;
 explain select * from category use index (complex_id_name_index) where name="it" and id = 1;
@@ -40,7 +50,11 @@ explain select * from category use index (primary) where name="it";
 explain select * from category where id=1;
 explain select * from category use index () where id=1;
 explain select * from category use index (primary) where id=1;
+select * from forum;
+#alter table forum add column view_count int not null default 0 after content;
 
+desc grade;
+desc mentoring_session;
 
 show index from mentoring_session;
 select * from mentoring_session use index (`fk_mento-mentee-session_category1_idx`);
