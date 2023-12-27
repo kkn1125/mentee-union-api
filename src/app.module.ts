@@ -15,6 +15,8 @@ import { ResourcesModule } from './resources/resources.module';
 import { SeminarsModule } from './seminars/seminars.module';
 import { UsersModule } from './users/users.module';
 import { MessagesModule } from './messages/messages.module';
+import { TasksService } from './tasks/tasks.service';
+// import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { MessagesModule } from './messages/messages.module';
       load: [serverConfig],
     }),
     HttpModule.register({}),
+    // ScheduleModule.forRoot(),
     DatabaseModule,
     UsersModule,
     MentoringModule,
@@ -39,6 +42,6 @@ import { MessagesModule } from './messages/messages.module';
     MessagesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [TasksService],
 })
 export class AppModule {}
