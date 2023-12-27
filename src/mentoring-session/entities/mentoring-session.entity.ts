@@ -46,6 +46,14 @@ export class MentoringSession extends BaseEntity {
   @Column()
   limit: number;
 
+  /* 세션 비밀번호 */
+  @Column()
+  password: string;
+
+  /* 세션 공개 여부 */
+  @Column()
+  is_private: boolean;
+
   @DeleteDateColumn()
   deleted_at: Date;
 

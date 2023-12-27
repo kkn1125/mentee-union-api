@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateMentoringSessionDto {
   @IsNotEmpty()
@@ -24,4 +24,11 @@ export class CreateMentoringSessionDto {
   @IsNotEmpty()
   @IsNumber()
   limit: number;
+
+  @IsString()
+  password: string;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  is_private: boolean;
 }

@@ -13,6 +13,9 @@ import { MentoringSessionGatewayService } from './mentoring-session-gateway.serv
 import { MessagesModule } from '@/messages/messages.module';
 import { MessagesService } from '@/messages/messages.service';
 import { ReadMessage } from '@/messages/entities/read-message.entity';
+import { UsersService } from '@/users/users.service';
+import { UserRecommend } from '@/users/entities/user-recommend.entity';
+import { Profile } from '@/users/entities/profile.entity';
 
 @Module({
   imports: [
@@ -20,6 +23,8 @@ import { ReadMessage } from '@/messages/entities/read-message.entity';
       MentoringSession,
       Mentoring,
       User,
+      UserRecommend,
+      Profile,
       Message,
       ReadMessage,
     ]),
@@ -32,6 +37,7 @@ import { ReadMessage } from '@/messages/entities/read-message.entity';
     MessagesService,
     MentoringSessionGateway,
     MentoringSessionGatewayService,
+    UsersService,
   ],
 })
 export class MentoringSessionModule {}

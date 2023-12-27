@@ -1,3 +1,6 @@
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { MessagesService } from '@/messages/messages.service';
+import { UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -5,14 +8,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 import { CreateMentoringSessionDto } from './dto/create-mentoring-session.dto';
 import { MentoringSessionGatewayService } from './mentoring-session-gateway.service';
-import { UpdateMentoringSessionDto } from './dto/update-mentoring-session.dto';
-import { Server, Socket } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
-import { MessagesService } from '@/messages/messages.service';
-import { ApiResponseService } from '@/api-response/api-response.service';
+import { UsersService } from '@/users/users.service';
 
 @WebSocketGateway({
   cors: {
@@ -25,6 +24,7 @@ export class MentoringSessionGateway {
   server: Server;
 
   constructor(
+    private readonly usersService: UsersService,
     private readonly mentoringSessionGatewayService: MentoringSessionGatewayService,
     private readonly messagesService: MessagesService,
   ) {}
@@ -48,6 +48,17 @@ export class MentoringSessionGateway {
     @ConnectedSocket() client: CustomSocket,
     @MessageBody() createMentoringSessionDto: CreateMentoringSessionDto,
   ) {
+    if (
+      createMentoringSessionDto.password !== undefined ||
+      createMentoringSessionDto.password !== null ||
+      createMentoringSessionDto.password !== ''
+    ) {
+      createMentoringSessionDto.password = this.usersService.encodingPassword(
+        client.user.email,
+        createMentoringSessionDto.password,
+      );
+    }
+
     const session = await this.mentoringSessionGatewayService.createRoom(
       createMentoringSessionDto,
     );

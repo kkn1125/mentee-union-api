@@ -1,11 +1,13 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
 import { Mentoring } from '@/mentoring/entities/mentoring.entity';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 import { CreateMentoringSessionDto } from './dto/create-mentoring-session.dto';
 import { UpdateMentoringSessionDto } from './dto/update-mentoring-session.dto';
 import { MentoringSession } from './entities/mentoring-session.entity';
+import { User } from '@/users/entities/user.entity';
+import { UsersService } from '@/users/users.service';
 
 @Injectable()
 export class MentoringSessionGatewayService {
