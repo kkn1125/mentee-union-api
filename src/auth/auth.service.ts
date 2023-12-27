@@ -11,7 +11,7 @@ import { MailerService } from '@/mailer/mailer.service';
 import * as cryptoJS from 'crypto-js';
 @Injectable()
 export class AuthService {
-  private readonly TRY_SIGN_IN_FAIL_LIMIT_COUNT = 5;
+  private readonly TRY_SIGN_IN_FAIL_LIMIT_COUNT = 10;
   constructor(
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
