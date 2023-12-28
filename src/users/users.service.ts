@@ -115,7 +115,9 @@ export class UsersService {
           },
         },
       });
-    } catch (error) {}
+    } catch (error) {
+      ApiResponseService.BAD_REQUEST(error, 'bad request finde one profile');
+    }
   }
 
   findOneByUsername(username: string) {
