@@ -45,6 +45,29 @@ export class ForumsService {
     return this.forumRepository.save(createForumDto);
   }
 
+  async updateViewCount(forum_id: number) {
+    const qr = this.forumRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+
+    try {
+      const dto = await this.forumRepository.query(
+        `UPDATE forum SET view_count = view_count + 1 WHERE id = ?`,
+        [forum_id],
+      );
+
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST(error, 'fail update view_count', [
+        forum_id,
+      ]);
+    }
+  }
+
   async likeForum(forum_id: number, user_id: number) {
     const user = await this.userRepository.findOne({ where: { id: user_id } });
 

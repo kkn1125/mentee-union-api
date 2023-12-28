@@ -28,7 +28,8 @@ export class ForumsController {
   }
 
   @Get(':id(\\d+)')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    await this.forumsService.updateViewCount(+id);
     return this.forumsService.findOne(+id);
   }
 
