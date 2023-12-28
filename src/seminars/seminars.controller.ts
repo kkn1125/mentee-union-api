@@ -9,7 +9,9 @@ import {
   Post,
   Put,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateSeminarDto } from './dto/create-seminar.dto';
@@ -18,6 +20,7 @@ import { UpdatePipe } from './pipe/update.pipe';
 import { SeminarsService } from './seminars.service';
 import { Request } from 'express';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('seminars')
 export class SeminarsController {
@@ -113,6 +116,22 @@ export class SeminarsController {
       ApiResponseService.SUCCESS('success confirm join seminar');
     } else {
       ApiResponseService.BAD_REQUEST('already confirmed');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('cover'))
+  async uploadCover(
+    @Req() req: Request,
+    @Body('seminar_id', ParseIntPipe) seminar_id: number,
+    @UploadedFile() cover: Express.Multer.File,
+  ) {
+    const seminar = await this.seminarsService.findOne(seminar_id);
+    if (seminar.host_id === req.user.userId) {
+      await this.seminarsService.uploadCover(seminar_id, cover);
+    } else {
+      ApiResponseService.BAD_REQUEST('not owner this seminar', req.user.userId);
     }
   }
 

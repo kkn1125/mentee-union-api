@@ -7,11 +7,14 @@ import { SeminarsController } from './seminars.controller';
 import { SeminarsService } from './seminars.service';
 import { UsersModule } from '@/users/users.module';
 import { SeminarParticipant } from './entities/seminar-participant.entity';
+import { Cover } from './entities/cover.entity';
+import encodeConfig from '@/config/encode.config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Seminar, SeminarParticipant]),
-    // ConfigModule.forFeature(encodeConfig),
+    TypeOrmModule.forFeature([Seminar, SeminarParticipant, Cover]),
+    ConfigModule.forFeature(encodeConfig),
     ApiResponseModule,
     LoggerModule,
     UsersModule,

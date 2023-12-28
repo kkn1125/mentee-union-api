@@ -7,12 +7,14 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SeminarParticipant } from './seminar-participant.entity';
 import { User } from '@/users/entities/user.entity';
 import { Category } from '@/categories/entities/category.entity';
+import { Cover } from './cover.entity';
 
 @Entity()
 export class Seminar extends BaseEntity {
@@ -81,4 +83,7 @@ export class Seminar extends BaseEntity {
     name: 'category_id',
   })
   category: Category;
+
+  @OneToOne(() => Cover, (cover) => cover.seminar)
+  cover: Cover;
 }

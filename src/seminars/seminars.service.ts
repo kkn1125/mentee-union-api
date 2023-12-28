@@ -1,17 +1,27 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { UsersService } from '@/users/users.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateSeminarDto } from './dto/create-seminar.dto';
 import { UpdateSeminarDto } from './dto/update-seminar.dto';
-import { Seminar } from './entities/seminar.entity';
 import { SeminarParticipant } from './entities/seminar-participant.entity';
-import { UsersService } from '@/users/users.service';
+import { Seminar } from './entities/seminar.entity';
+import { Cover } from './entities/cover.entity';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as cryptoJS from 'crypto-js';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SeminarsService {
+  UPLOAD_PROFILE_PATH = 'storage/upload/cover';
+
   constructor(
+    private readonly configService: ConfigService,
     private readonly usersService: UsersService,
+    @InjectRepository(Cover)
+    private readonly coverRepository: Repository<Cover>,
     @InjectRepository(Seminar)
     private readonly seminarRepository: Repository<Seminar>,
     @InjectRepository(SeminarParticipant)
@@ -27,8 +37,12 @@ export class SeminarsService {
     return this.seminarRepository.find({
       relations: {
         user: true,
-        seminarParticipants: true,
+        seminarParticipants: {
+          seminar: true,
+          user: true,
+        },
         category: true,
+        cover: true,
       },
     });
   }
@@ -55,6 +69,7 @@ export class SeminarsService {
             seminar: true,
             user: true,
           },
+          cover: true,
         },
       });
     } catch (error) {
@@ -268,6 +283,70 @@ export class SeminarsService {
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail cancel join');
+    }
+  }
+
+  getCoverImage(filename: string) {
+    const file = fs.readFileSync(
+      path.join(path.resolve(), this.UPLOAD_PROFILE_PATH, filename),
+    );
+    return file;
+  }
+
+  async uploadCover(seminar_id: number, cover: Express.Multer.File) {
+    const qr = this.coverRepository.manager.connection.createQueryRunner();
+
+    try {
+      fs.readdirSync(path.join(path.resolve(), this.UPLOAD_PROFILE_PATH));
+    } catch (error) {
+      fs.mkdirSync(path.join(path.resolve(), this.UPLOAD_PROFILE_PATH), {
+        recursive: true,
+      });
+    }
+
+    const seminar = await this.seminarRepository.findOne({
+      where: { id: seminar_id },
+    });
+
+    if (!seminar) {
+      ApiResponseService.NOT_FOUND('seminar not found', seminar_id);
+    }
+
+    const filename = cryptoJS
+      .HmacSHA256(
+        cover.originalname + +new Date(),
+        this.configService.get<string>('encode.privkey'),
+      )
+      .toString();
+
+    const extend = cover.originalname.split('.')[1];
+    const newFileName = filename + '.' + extend;
+
+    try {
+      fs.writeFileSync(
+        path.join(this.UPLOAD_PROFILE_PATH, newFileName),
+        cover.buffer,
+      );
+    } catch (error) {
+      ApiResponseService.BAD_REQUEST('error creating profile file');
+      return;
+    }
+
+    await qr.startTransaction();
+
+    try {
+      const dto = await this.coverRepository.save({
+        seminar_id,
+        origin_name: '',
+        new_name: '',
+      });
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST(error, 'fail upload cover');
     }
   }
 }
