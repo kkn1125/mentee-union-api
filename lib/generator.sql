@@ -428,6 +428,27 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum_like` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `mentee-union`.`cover`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mentee-union`.`cover` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `seminar_id` INT NULL,
+  `origin_name` VARCHAR(150) NOT NULL,
+  `new_name` VARCHAR(200) NOT NULL,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `fk_cover_seminar1_idx` (`seminar_id` ASC) VISIBLE,
+  CONSTRAINT `fk_cover_seminar1`
+    FOREIGN KEY (`seminar_id`)
+    REFERENCES `mentee-union`.`seminar` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
