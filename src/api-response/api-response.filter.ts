@@ -13,10 +13,11 @@ export class ApiResponseFilter implements ExceptionFilter {
   constructor(private readonly apiResponseService: ApiResponseService) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
+    console.trace('catch trace');
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     // const request = ctx.getRequest<Request>();
-    console.log('필터');
+    // console.log('필터');
     const status = exception.getStatus?.() || 500;
     const message = exception.getResponse?.() || 'Internal Server Error';
     const detail = exception.cause as string | string[];
@@ -25,10 +26,15 @@ export class ApiResponseFilter implements ExceptionFilter {
       typeof message === 'object' && 'message' in (message as any);
     // console.log(Object.keys(exception));
     // console.log(exception.name);
+    // console.log('status', status);
+    // console.log('message', message);
+    // console.log('detail', detail);
+    // console.log(exception.message);
+    // console.log(exception.cause);
 
     if (exception instanceof QueryFailedError) {
       //@ts-ignore
-      console.log(exception.code);
+      // console.log(exception.code);
       /* DB 에러 */
       /* 예외 처리는 sentry에서 db 예외처리를 중요하게 다루어야 됨. */
       response.status(status).json(
