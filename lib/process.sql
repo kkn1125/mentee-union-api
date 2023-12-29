@@ -45,6 +45,8 @@ select * from forum_like;
 alter table forum_like add column deleted_at timestamp default null, add column created_at timestamp not null default current_timestamp(), add column updated_at timestamp not null default current_timestamp() on update current_timestamp();
 select * from seminar_participant;
 explain select * from category;
+select * from cover;
+#update cover set origin_name='logo.png', new_name='e68269b19c577ff51dbb8b1bb0de0169bd9617081792734c49521c652186785b.png';
 explain select * from category use index (complex_id_name_index) where name="it" and id = 1;
 explain select * from category use index (primary) where name="it";
 explain select * from category where id=1;
