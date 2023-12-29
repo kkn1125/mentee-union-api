@@ -1,3 +1,4 @@
+import { ApiResponseService } from '@/api-response/api-response.service';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import {
   Body,
@@ -9,25 +10,28 @@ import {
   Post,
   Put,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Request, Response } from 'express';
 import { CreateSeminarDto } from './dto/create-seminar.dto';
 import { UpdateSeminarDto } from './dto/update-seminar.dto';
 import { UpdatePipe } from './pipe/update.pipe';
 import { SeminarsService } from './seminars.service';
-import { Request } from 'express';
-import { ApiResponseService } from '@/api-response/api-response.service';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('seminars')
 export class SeminarsController {
   constructor(private readonly seminarsService: SeminarsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(
+  @UseInterceptors(FileInterceptor('cover'))
+  async create(
+    @Req() req: Request,
     @Body(
       new ValidationPipe({
         transform: true,
@@ -35,8 +39,30 @@ export class SeminarsController {
       }),
     )
     createSeminarDto: CreateSeminarDto,
+    @UploadedFile() cover: Express.Multer.File,
   ) {
-    return this.seminarsService.create(createSeminarDto);
+    createSeminarDto.host_id = req.user.userId;
+    try {
+      const seminar = await this.seminarsService.create(createSeminarDto);
+      if (cover) {
+        await this.seminarsService.uploadCover(seminar.id, cover);
+        return await this.seminarsService.findOne(seminar.id);
+      } else {
+        return seminar;
+      }
+    } catch (error) {
+      ApiResponseService.BAD_REQUEST(error, 'fail create seminar');
+    }
+  }
+
+  @Get('cover/:filename')
+  getCover(
+    @Res({ passthrough: true }) res: Response,
+    @Param('filename') filename: string,
+  ) {
+    const cover = this.seminarsService.getCoverImage(filename);
+    res.contentType(`image/${filename.split('.')[1]}`);
+    res.send(cover);
   }
 
   @Get()
@@ -44,8 +70,8 @@ export class SeminarsController {
     return this.seminarsService.findAll();
   }
 
-  @Get('participants')
   @UseGuards(JwtAuthGuard)
+  @Get('participants')
   findInvolvedSeminars(@Req() req: Request) {
     return this.seminarsService.findInvolvedSeminars(req.user.userId);
   }
@@ -55,8 +81,11 @@ export class SeminarsController {
     return this.seminarsService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id(\\d+)')
+  @UseInterceptors(FileInterceptor('cover'))
   async update(
+    @Req() req: Request,
     @Param('id', ParseIntPipe) id: number,
     @Body(
       UpdatePipe,
@@ -66,9 +95,23 @@ export class SeminarsController {
       }),
     )
     updateSeminarDto: UpdateSeminarDto,
+    @UploadedFile() cover: Express.Multer.File,
   ) {
-    await this.seminarsService.update(+id, updateSeminarDto);
-    return ApiResponseService.SUCCESS('success');
+    //@ts-ignore
+    const { coverField, ...convertUpdateSeminarDto } = updateSeminarDto;
+    console.log(convertUpdateSeminarDto);
+    const seminar = await this.seminarsService.findOne(id);
+    if (seminar.host_id === req.user.userId) {
+      await this.seminarsService.update(+id, convertUpdateSeminarDto);
+
+      if (cover) {
+        await this.seminarsService.uploadCover(+id, cover);
+      }
+
+      return ApiResponseService.SUCCESS('success update seminar');
+    } else {
+      ApiResponseService.BAD_REQUEST('fail update seminar', [+id]);
+    }
   }
 
   @Delete(':id(\\d+)')
@@ -129,7 +172,9 @@ export class SeminarsController {
   ) {
     const seminar = await this.seminarsService.findOne(seminar_id);
     if (seminar.host_id === req.user.userId) {
-      await this.seminarsService.uploadCover(seminar_id, cover);
+      if (cover) {
+        await this.seminarsService.uploadCover(seminar_id, cover);
+      }
     } else {
       ApiResponseService.BAD_REQUEST('not owner this seminar', req.user.userId);
     }

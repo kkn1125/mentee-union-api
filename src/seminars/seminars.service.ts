@@ -64,11 +64,11 @@ export class SeminarsService {
           user: {
             profiles: true,
           },
-          category: true,
           seminarParticipants: {
             seminar: true,
             user: true,
           },
+          category: true,
           cover: true,
         },
       });
@@ -103,12 +103,14 @@ export class SeminarsService {
       await this.seminarRepository.findOneOrFail({
         where: { id },
       });
-
+      console.log('ok');
       const dto = await this.seminarRepository.update(id, updateSeminarDto);
+      console.log('fail?');
       await qr.commitTransaction();
       await qr.release();
       return dto;
     } catch (error) {
+      console.log('error', error);
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail update seminar');
@@ -335,11 +337,18 @@ export class SeminarsService {
     await qr.startTransaction();
 
     try {
-      const dto = await this.coverRepository.save({
+      await this.coverRepository.delete({
         seminar_id,
-        origin_name: '',
-        new_name: '',
       });
+
+      const dto = await this.coverRepository.save(
+        {
+          seminar_id,
+          origin_name: cover.originalname,
+          new_name: newFileName,
+        },
+        { transaction: true },
+      );
       await qr.commitTransaction();
       await qr.release();
       return dto;

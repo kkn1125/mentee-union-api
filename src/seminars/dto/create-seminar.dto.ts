@@ -1,8 +1,10 @@
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsEmpty,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   Max,
   MaxLength,
   Min,
@@ -11,7 +13,7 @@ import {
 import { IsBefore } from '../validator/is-before.decorator';
 
 export class CreateSeminarDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Transform(({ value }) => Number(value))
   host_id: number;
@@ -36,9 +38,9 @@ export class CreateSeminarDto {
 
   @IsNotEmpty()
   @Max(50)
-  @Min(1)
+  @Min(2)
   @Transform(({ value }) => Number(value))
-  limit_participant_amount: number;
+  limit_participant_amount: number = 2;
 
   @IsNotEmpty()
   @Transform(({ value }) => new Date(value))

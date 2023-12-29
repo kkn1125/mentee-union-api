@@ -1,4 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateSeminarDto } from './create-seminar.dto';
+import { IsEmpty, IsNumber } from 'class-validator';
+import { Transform } from 'class-transformer';
 
-export class UpdateSeminarDto extends PartialType(CreateSeminarDto) {}
+class ExtendsUpdateSeminarDto extends CreateSeminarDto {}
+
+export class UpdateSeminarDto extends PartialType(ExtendsUpdateSeminarDto) {}
