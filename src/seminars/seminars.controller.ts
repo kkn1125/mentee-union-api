@@ -77,8 +77,9 @@ export class SeminarsController {
   }
 
   @Get(':id(\\d+)')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.seminarsService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    await this.seminarsService.updateViewCount(+id);
+    return await this.seminarsService.findOne(+id);
   }
 
   @UseGuards(JwtAuthGuard)

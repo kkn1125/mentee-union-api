@@ -77,6 +77,29 @@ export class SeminarsService {
     }
   }
 
+  async updateViewCount(id: number) {
+    const qr = this.seminarRepository.manager.connection.createQueryRunner();
+
+    await qr.startTransaction();
+    try {
+      const dto = await this.seminarRepository.query(
+        `UPDATE seminar SET view_count = view_count + 1 WHERE id=?`,
+        [id],
+      );
+      await qr.commitTransaction();
+      await qr.release();
+      return dto;
+    } catch (error) {
+      await qr.rollbackTransaction();
+      await qr.release();
+      ApiResponseService.BAD_REQUEST(
+        error,
+        'fail update view count in seminar',
+        id,
+      );
+    }
+  }
+
   async create(createSeminarDto: CreateSeminarDto) {
     // return 'This action adds a new seminar';
     const qr = this.seminarRepository.manager.connection.createQueryRunner();
