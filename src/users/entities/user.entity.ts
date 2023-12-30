@@ -20,6 +20,7 @@ import { Profile } from './profile.entity';
 import { UserRecommend } from './user-recommend.entity';
 import { ReadMessage } from '@/messages/entities/read-message.entity';
 import { ForumLike } from '@/forums/entities/forum-like.entity';
+import { Board } from '@/boards/entities/board.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -123,4 +124,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => ForumLike, (forumLike) => forumLike.user)
   forumLikes: ForumLike[];
+
+  @OneToMany(() => Board, (board) => board.user)
+  boards: Board[];
 }
