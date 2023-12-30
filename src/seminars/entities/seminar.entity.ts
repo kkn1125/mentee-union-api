@@ -34,6 +34,9 @@ export class Seminar extends BaseEntity {
   content: string;
 
   @Column()
+  view_count: number;
+
+  @Column()
   meeting_place: string;
 
   @Column()
