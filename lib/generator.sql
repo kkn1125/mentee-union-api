@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar` (
   `category_id` INT NOT NULL,
   `title` VARCHAR(50) NOT NULL,
   `content` LONGTEXT NOT NULL,
+  `view_count` INT NOT NULL DEFAULT 0,
   `meeting_place` VARCHAR(150) NOT NULL,
   `limit_participant_amount` INT NOT NULL DEFAULT 0,
   `recruit_start_date` TIMESTAMP NOT NULL,
@@ -390,15 +391,23 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`board` (
   `id` INT NOT NULL,
+  `user_id` INT NOT NULL,
   `type` VARCHAR(20) NOT NULL DEFAULT 'notice' COMMENT 'board type\n- faq\n- event\n- notice',
   `title` VARCHAR(50) NOT NULL,
   `content` LONGTEXT NOT NULL,
+  `view_count` INT NOT NULL DEFAULT 0,
   `visible` TINYINT NOT NULL DEFAULT 1,
   `sequence` INT NOT NULL DEFAULT -1,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`id`),
+  INDEX `fk_board_user1_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_board_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `mentee-union`.`user` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 

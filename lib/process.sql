@@ -35,7 +35,31 @@ show indexes from category;
 select * from seminar;
 select * from grade;
 desc grade;
-
+SELECT 
+    id,
+    host_id,
+    category_id,
+    title,
+    content,
+    recruit_start_date,
+    recruit_end_date,
+    seminar_start_date,
+    seminar_end_date
+FROM
+    seminar;
+desc board;
+UPDATE seminar 
+SET 
+    recruit_start_date = '2023-12-31 00:00',
+    recruit_end_date = '2023-12-31 16:00',
+    seminar_start_date = '2024-1-1 09:00',
+    seminar_end_date = '2024-1-1 20:00'
+WHERE
+    id = 5;
+select * from board where type="qna" and (visible=true or user_id = 1);
+#alter table board modify column id int not null auto_increment;
+#desc board;
+#alter table board add column view_count int not null default 0 after content;
 update grade set name = "mentee0", description = "초기 멘티 등급입니다. 멘토링 커뮤니티에 적응하고 기본적인 활동을 시작하는 단계입니다." where id = 1;
 update grade set name = "mentee1", description = "경험이 더 많은 멘티 등급입니다. 멘토링 활동을 통한 성장과 경험을 쌓는 단계입니다." where id = 2;
 update grade set name = "mentor0", description = "신규 멘토 등급니다. 멘토로서의 첫 경험을 쌓고, 멘티들에게 지식을 전달하는 단계입니다." where id = 3;
