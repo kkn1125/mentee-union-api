@@ -17,6 +17,7 @@ import { UsersModule } from './users/users.module';
 import { MessagesModule } from './messages/messages.module';
 import { TasksService } from './tasks/tasks.service';
 // import { ScheduleModule } from '@nestjs/schedule';
+import { BoardsModule } from './boards/boards.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { TasksService } from './tasks/tasks.service';
     MentoringSessionModule,
     CategoriesModule,
     MessagesModule,
+    BoardsModule,
   ],
   controllers: [],
   providers: [TasksService],
