@@ -1,21 +1,21 @@
+import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Req,
+  Get,
+  Param,
   ParseIntPipe,
+  Post,
+  Put,
+  Req,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
-import { Request } from 'express';
 import { JwtCheckGuard } from './jwt-check.guard';
 
 @Controller('boards')
@@ -86,7 +86,7 @@ export class BoardsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id(\\d+)')
+  @Put(':id(\\d+)')
   async update(
     @Req() req: Request,
     @Param('id', ParseIntPipe) id: number,
@@ -94,7 +94,10 @@ export class BoardsController {
   ) {
     const board = await this.boardsService.findOne(id);
     if (board.user_id === req.user.userId) {
-      return this.boardsService.update(+id, updateBoardDto);
+      await this.boardsService.update(+id, updateBoardDto);
+      return {
+        message: 'success update board',
+      };
     } else {
       return {
         message: 'not owner this board',
@@ -103,7 +106,7 @@ export class BoardsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('qna/:id(\\d+)')
+  @Put('qna/:id(\\d+)')
   async updateQna(
     @Req() req: Request,
     @Param('id', ParseIntPipe) id: number,
@@ -111,7 +114,10 @@ export class BoardsController {
   ) {
     const board = await this.boardsService.findOneByType(id, 'qna');
     if (board.user_id === req.user.userId) {
-      return this.boardsService.update(+id, updateBoardDto);
+      await this.boardsService.update(+id, updateBoardDto);
+      return {
+        message: 'success update board',
+      };
     } else {
       return {
         message: 'not owner this qna',
