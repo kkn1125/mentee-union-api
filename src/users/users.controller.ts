@@ -45,7 +45,7 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @Get('profile/:filename')
+  @Get('profile/resource/:filename')
   getFilename(
     @Res({ passthrough: true }) res: Response,
     @Param('filename') filename: string,
@@ -59,6 +59,50 @@ export class UsersController {
   @Get('profile')
   async findOneProfile(@Req() req: Request) {
     const user = await this.usersService.findOneProfile(req.user.userId);
+    if (user) {
+      return user;
+    } else {
+      ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile/seminars')
+  async findOneSeminars(@Req() req: Request) {
+    const user = await this.usersService.findOneSeminars(req.user.userId);
+    if (user) {
+      return user;
+    } else {
+      ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile/forums')
+  async findOneForums(@Req() req: Request) {
+    const user = await this.usersService.findOneForums(req.user.userId);
+    if (user) {
+      return user;
+    } else {
+      ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile/points')
+  async findOnePointSystem(@Req() req: Request) {
+    const user = await this.usersService.findOnePointSystem(req.user.userId);
+    if (user) {
+      return user;
+    } else {
+      ApiResponseService.NOT_FOUND('not found user', 'invalid token');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile/mentorings')
+  async findOneMentorings(@Req() req: Request) {
+    const user = await this.usersService.findOneMentorings(req.user.userId);
     if (user) {
       return user;
     } else {
@@ -187,6 +231,119 @@ export class UsersController {
     givePointsDto: GivePointsDto,
   ) {
     return this.usersService.givePoints(givePointsDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('points/already')
+  async userPointsAlready(
+    @Req() req: Request,
+    @Body('receiver_id', ParseIntPipe) receiver_id: number,
+  ) {
+    const isGiverSameReceiver = this.usersService.isGiverReceiver(
+      req.user.userId,
+      receiver_id,
+    );
+
+    const giver = await this.usersService.findOne(req.user.userId);
+    const receiver = await this.usersService.findOne(receiver_id);
+
+    const notFoundList: number[] = [];
+
+    if (!giver) {
+      notFoundList.push(req.user.userId);
+    }
+
+    if (!receiver) {
+      notFoundList.push(receiver_id);
+    }
+
+    if (notFoundList.length > 0) {
+      ApiResponseService.NOT_FOUND('not found receiver', notFoundList);
+    }
+
+    if (isGiverSameReceiver) {
+      ApiResponseService.CONFLICT('duplicated giver as receiver', [
+        req.user.userId,
+        receiver_id,
+      ]);
+    } else {
+      return await this.usersService.checkAlreadyPointGived(
+        req.user.userId,
+        receiver_id,
+      );
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('points')
+  async userPointsAsJwt(
+    @Req() req: Request,
+    // @Res({ passthrough: true }) res: Response,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        stopAtFirstError: true,
+      }),
+    )
+    givePointsDto: GivePointsDto,
+  ) {
+    givePointsDto.giver_id = req.user.userId;
+
+    const giver = await this.usersService.findOne(req.user.userId);
+    const receiver = await this.usersService.findOne(givePointsDto.receiver_id);
+
+    const notFoundList: number[] = [];
+
+    if (!giver) {
+      notFoundList.push(req.user.userId);
+    }
+
+    if (!receiver) {
+      notFoundList.push(givePointsDto.receiver_id);
+    }
+
+    if (notFoundList.length > 0) {
+      /* 사용자 찾지 못할 때 */
+      ApiResponseService.NOT_FOUND('not found user', notFoundList);
+    }
+
+    if (giver.id === receiver.id) {
+      /* 추천자와 추천인이 동일할 때 */
+      ApiResponseService.BAD_REQUEST('do not give point to self');
+    } else {
+      const result = await this.usersService.givePoints(givePointsDto);
+
+      const isPossibleUpgradeReceiver =
+        await this.usersService.isPossibleUpgrade(receiver.id);
+      const isPossibleUpgradeGiver = await this.usersService.isPossibleUpgrade(
+        giver.id,
+      );
+
+      if (isPossibleUpgradeReceiver) {
+        const upgraded = await this.usersService.upgradeUser(receiver.id);
+        if (upgraded === null) {
+          ApiResponseService.BAD_REQUEST('fail upgrade', receiver.id);
+        } else {
+          console.log('upgraded receiver id:', receiver.id);
+        }
+      }
+
+      if (isPossibleUpgradeGiver) {
+        const upgraded = await this.usersService.upgradeUser(giver.id);
+        if (upgraded === null) {
+          ApiResponseService.BAD_REQUEST('fail upgrade', giver.id);
+        } else {
+          console.log('upgraded giver id:', receiver.id);
+        }
+      }
+
+      if (result === null) {
+        ApiResponseService.BAD_REQUEST('not allowed recommend same person');
+      } else {
+        ApiResponseService.SUCCESS('success give points to receiver');
+        // return result;
+      }
+    }
   }
 
   @Delete('dormant')

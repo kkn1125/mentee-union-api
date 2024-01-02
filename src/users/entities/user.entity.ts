@@ -89,10 +89,10 @@ export class User extends BaseEntity {
   @ManyToOne(() => Grade, (grade) => grade.users)
   grade: Grade;
 
-  @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.giver)
-  givers: User[];
   @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.receiver)
-  receivers: User[];
+  givers: UserRecommend[];
+  @OneToMany(() => UserRecommend, (userRecommend) => userRecommend.giver)
+  receivers: UserRecommend[];
   // @ManyToMany(() => User, (user) => user.giver)
   // receiver: User[];
   // @ManyToMany(() => User, (user) => user.receiver)

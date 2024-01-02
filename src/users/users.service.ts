@@ -12,19 +12,23 @@ import { UserRecommend } from './entities/user-recommend.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Profile } from './entities/profile.entity';
+import { Forum } from '@/forums/entities/forum.entity';
+import { Grade } from '@/grades/entities/grade.entity';
 
 @Injectable()
 export class UsersService {
   UPLOAD_PROFILE_PATH = 'storage/upload/profile';
 
   constructor(
-    @InjectRepository(UserRecommend)
-    private readonly userRecommendRepository: Repository<UserRecommend>,
+    private readonly configService: ConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserRecommend)
+    private readonly userRecommendRepository: Repository<UserRecommend>,
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
-    private readonly configService: ConfigService,
+    @InjectRepository(Grade)
+    private readonly gradeRepository: Repository<Grade>,
   ) {}
 
   getRepository() {
@@ -62,63 +66,217 @@ export class UsersService {
     }
   }
 
-  async findOneProfile(id: number) {
-    try {
-      return await this.userRepository.findOne({
-        where: { id },
-        select: [
-          'id',
-          'grade_id',
-          'username',
-          'email',
-          'phone_number',
-          'birth',
-          'gender',
-          'auth_email',
-          'level',
-          'points',
-          'fail_login_count',
-          'last_login_at',
-          'status',
-          'deleted_at',
-          'created_at',
-          'updated_at',
-        ],
-        relations: {
-          seminars: {
-            user: true,
-          },
-          seminarParticipants: {
-            seminar: {
-              category: true,
-              user: {
-                profiles: true,
-              },
-            },
-          },
-          forums: true,
-          givers: true,
-          receivers: true,
-          grade: true,
-          profiles: true,
-          mentorings: {
-            mentoringSession: {
-              messages: true,
-              category: true,
-            },
-          },
-          forumLikes: {
-            user: { profiles: true },
-            forum: {
-              user: true,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      ApiResponseService.BAD_REQUEST(error, 'bad request finde one profile');
-    }
+  findOneProfile(id: number) {
+    const qb = this.userRepository.createQueryBuilder('user');
+    return qb
+      .leftJoinAndSelect('user.profiles', 'profiles')
+      .leftJoinAndSelect('user.grade', 'grade')
+      .select([
+        'user.id',
+        'user.grade_id',
+        'user.username',
+        'user.email',
+        'user.phone_number',
+        'user.birth',
+        'user.gender',
+        'user.auth_email',
+        'user.level',
+        'user.points',
+        'user.fail_login_count',
+        'user.last_login_at',
+        'user.status',
+        'user.deleted_at',
+        'user.created_at',
+        'user.updated_at',
+        'profiles',
+        'grade',
+      ])
+      .where('user.id = :id', { id })
+      .getOne();
   }
+
+  findOneSeminars(id: number) {
+    const qb = this.userRepository.createQueryBuilder('user');
+    return qb
+      .leftJoinAndSelect('user.seminars', 'seminars')
+      .leftJoinAndSelect('user.seminarParticipants', 'seminarParticipants')
+      .leftJoinAndSelect('seminars.user', 'serminarUser')
+      .leftJoinAndSelect('seminarParticipants.seminar', 'seminar')
+      .leftJoinAndSelect('seminar.category', 'category')
+      .leftJoinAndSelect('seminar.user', 'seminarUser')
+      .leftJoinAndSelect(
+        'seminar.seminarParticipants',
+        'seminarSeminarParticipants',
+      )
+      .select([
+        'user.id',
+        'seminars',
+        'seminarParticipants',
+        'serminarUser',
+        'seminar',
+        'category',
+        'seminarUser',
+        'seminarSeminarParticipants',
+      ])
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
+  findOneForums(id: number) {
+    const qb = this.userRepository.createQueryBuilder('user');
+    return qb
+      .leftJoinAndSelect('user.forums', 'forums')
+      .leftJoinAndSelect('user.forumLikes', 'forumLikes')
+      .leftJoinAndSelect('forumLikes.forum', 'forum')
+      .leftJoinAndSelect('forumLikes.user', 'forumLikesUser')
+      .select(['user.id', 'forums', 'forumLikes', 'forum', 'forumLikesUser'])
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
+  findOnePointSystem(id: number) {
+    const qb = this.userRepository.createQueryBuilder('user');
+    return qb
+      .leftJoinAndSelect('user.givers', 'givers')
+      .leftJoinAndSelect('user.receivers', 'receivers')
+      .leftJoinAndSelect('givers.giver', 'giversUser')
+      .leftJoinAndSelect('receivers.receiver', 'receiversUser')
+      .select(['user.id', 'givers', 'receivers', 'giversUser', 'receiversUser'])
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
+  findOneMentorings(id: number) {
+    const qb = this.userRepository.createQueryBuilder('user');
+    return qb
+      .leftJoinAndSelect('user.mentorings', 'mentorings')
+      .leftJoinAndSelect('mentorings.mentoringSession', 'mentoringSession')
+      .leftJoinAndSelect('mentoringSession.messages', 'messages')
+      .leftJoinAndSelect('mentoringSession.category', 'category')
+      .select([
+        'user.id',
+        'mentorings',
+        'mentoringSession',
+        'messages',
+        'category',
+      ])
+      .where('user.id = :id', { id })
+      .getOne();
+  }
+
+  async isPossibleUpgrade(user_id: number) {
+    return !!(await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.grade', 'grade')
+      .where('user.id = :user_id', { user_id })
+      .andWhere('user.points >= 100 + user.level * 50')
+      .getOne());
+  }
+
+  async upgradeUser(user_id: number) {
+    const isUpgradeable = this.isPossibleUpgrade(user_id);
+
+    if (!isUpgradeable) return null;
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+    });
+    const grades = await this.gradeRepository.find({
+      order: {
+        id: 'ASC',
+      },
+    });
+    const foundUpgradeableId = grades.findIndex(
+      (grade) => grade.id === user.grade_id,
+    );
+    const availableGradeNumber = grades[foundUpgradeableId + 1];
+
+    if (availableGradeNumber) {
+      const qr = this.userRepository.manager.connection.createQueryRunner();
+
+      await qr.startTransaction();
+      try {
+        const dto = await this.userRepository.update(user.id, {
+          grade_id: availableGradeNumber.id,
+          level: user.level + 1,
+        });
+        await qr.commitTransaction();
+        await qr.release();
+        console.log('check dto', dto);
+      } catch (error) {
+        await qr.rollbackTransaction();
+        await qr.release();
+        ApiResponseService.BAD_REQUEST('not available upgrade user');
+      }
+    }
+
+    // 등급 인덱스 초과 시 최고 레벨이기 때문에 현상 유지
+    return await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+    });
+  }
+
+  // async findOneProfileAll(id: number) {
+  //   try {
+  //     return await this.userRepository.findOne({
+  //       where: { id },
+  //       select: [
+  //         'id',
+  //         'grade_id',
+  //         'username',
+  //         'email',
+  //         'phone_number',
+  //         'birth',
+  //         'gender',
+  //         'auth_email',
+  //         'level',
+  //         'points',
+  //         'fail_login_count',
+  //         'last_login_at',
+  //         'status',
+  //         'deleted_at',
+  //         'created_at',
+  //         'updated_at',
+  //       ],
+  //       relations: {
+  //         seminars: {
+  //           user: true,
+  //         },
+  //         seminarParticipants: {
+  //           seminar: {
+  //             category: true,
+  //             user: {
+  //               profiles: true,
+  //             },
+  //           },
+  //         },
+  //         forums: true,
+  //         givers: true,
+  //         receivers: true,
+  //         grade: true,
+  //         profiles: true,
+  //         mentorings: {
+  //           mentoringSession: {
+  //             messages: true,
+  //             category: true,
+  //           },
+  //         },
+  //         forumLikes: {
+  //           user: { profiles: true },
+  //           forum: {
+  //             user: true,
+  //           },
+  //         },
+  //       },
+  //     });
+  //   } catch (error) {
+  //     ApiResponseService.BAD_REQUEST(error, 'bad request finde one profile');
+  //   }
+  // }
 
   findOneByUsername(username: string) {
     return this.userRepository.findOne({ where: { username } });
@@ -177,7 +335,32 @@ export class UsersService {
     }
   }
 
+  isGiverReceiver(giver_id: number, receiver_id: number) {
+    return giver_id === receiver_id;
+  }
+
+  async checkAlreadyPointGived(giver_id: number, receiver_id: number) {
+    const isAlreadyGived = await this.userRecommendRepository.findOne({
+      where: {
+        giver_id,
+        receiver_id,
+      },
+    });
+    console.log('isAlreadyGived', isAlreadyGived);
+    console.log('isAlreadyGived', !!isAlreadyGived);
+    return !!isAlreadyGived;
+  }
+
   async givePoints(givePointsDto: GivePointsDto) {
+    const recommendedSameUser = await this.checkAlreadyPointGived(
+      givePointsDto.giver_id,
+      givePointsDto.receiver_id,
+    );
+
+    if (recommendedSameUser) {
+      return null;
+    }
+
     const userQr = this.userRepository.manager.connection.createQueryRunner();
     const userRecommendQr =
       this.userRecommendRepository.manager.connection.createQueryRunner();
@@ -278,7 +461,8 @@ export class UsersService {
       await userQr.release();
     }
 
-    ApiResponseService.SUCCESS('success give points to receiver');
+    // ApiResponseService.SUCCESS('success give points to receiver');
+    return true;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

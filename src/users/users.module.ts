@@ -1,5 +1,7 @@
 import { ApiResponseModule } from '@/api-response/api-response.module';
+import { AuthService } from '@/auth/auth.service';
 import encodeConfig from '@/config/encode.config';
+import { Grade } from '@/grades/entities/grade.entity';
 import { LoggerModule } from '@/logger/logger.module';
 import { MailerService } from '@/mailer/mailer.service';
 import { Module } from '@nestjs/common';
@@ -10,13 +12,10 @@ import { UserRecommend } from './entities/user-recommend.entity';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { AuthModule } from '@/auth/auth.module';
-import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
-import { AuthService } from '@/auth/auth.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserRecommend, Profile]),
+    TypeOrmModule.forFeature([User, UserRecommend, Profile, Grade]),
     ConfigModule.forFeature(encodeConfig),
     ApiResponseModule,
     LoggerModule,

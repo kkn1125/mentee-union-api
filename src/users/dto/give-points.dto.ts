@@ -1,7 +1,17 @@
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class GivePointsDto {
+  @IsOptional()
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
   giver_id: number;
@@ -15,9 +25,12 @@ export class GivePointsDto {
   @Transform(({ value }) => Number(value))
   @Max(15)
   @Min(5)
-  points: number;
+  points: number = 5;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  reason: string;
+  @MinLength(0)
+  @MaxLength(150)
+  @Transform(({ value }) => value || '')
+  reason: string = '';
 }
