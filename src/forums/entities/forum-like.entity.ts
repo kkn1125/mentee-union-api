@@ -5,9 +5,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -36,6 +33,7 @@ export class ForumLike extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.forumLikes)
   user: User;
+
   @ManyToOne(() => Forum, (forum) => forum.forumLikes)
   forum: Forum;
 }
