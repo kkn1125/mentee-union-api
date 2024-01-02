@@ -57,6 +57,11 @@ SET
 WHERE
     id = 5;
 select * from board where type="qna" and (visible=true or user_id = 1);
+select * from user;
+select * from user_recommend;
+
+insert into user_recommend (giver_id, receiver_id, points, reason) values (3,2,99,'test reason');
+#delete from user_recommend where giver_id = 1;
 #alter table board modify column id int not null auto_increment;
 #desc board;
 #alter table board add column view_count int not null default 0 after content;
