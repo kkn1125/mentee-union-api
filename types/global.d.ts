@@ -23,4 +23,6 @@ export declare global {
 
   interface QueryFailedErrors extends QueryFailedError, Custom {}
   interface EntityNotFoundErrors extends EntityNotFoundError, Custom {}
+
+  type MockRepository<T = any> = Record<keyof Repository<T>, jest.Mock>;
 }
