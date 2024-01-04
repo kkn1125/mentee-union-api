@@ -1,5 +1,6 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { LoggerService } from '@/logger/logger.service';
 import {
   Body,
   Controller,
@@ -25,7 +26,10 @@ import { SeminarsService } from './seminars.service';
 
 @Controller('seminars')
 export class SeminarsController {
-  constructor(private readonly seminarsService: SeminarsService) {}
+  constructor(
+    private readonly loggerService: LoggerService,
+    private readonly seminarsService: SeminarsService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -100,7 +104,7 @@ export class SeminarsController {
   ) {
     //@ts-ignore
     const { coverField, ...convertUpdateSeminarDto } = updateSeminarDto;
-    console.log(convertUpdateSeminarDto);
+    this.loggerService.log(convertUpdateSeminarDto);
     const seminar = await this.seminarsService.findOne(id);
     if (seminar.host_id === req.user.userId) {
       await this.seminarsService.update(+id, convertUpdateSeminarDto);

@@ -1,17 +1,18 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
+import { MentoringSession } from '@/mentoring-session/entities/mentoring-session.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { SaveReadMessageDto } from './dto/save-read-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { Message } from './entities/message.entity';
 import { ReadMessage } from './entities/read-message.entity';
-import { MentoringSession } from '@/mentoring-session/entities/mentoring-session.entity';
 
 @Injectable()
 export class MessagesService {
   constructor(
+    private readonly loggerService: LoggerService,
     @InjectRepository(MentoringSession)
     private readonly mentoringSessionRepository: Repository<MentoringSession>,
     @InjectRepository(Message)
@@ -23,16 +24,6 @@ export class MessagesService {
   findAll() {
     return this.messagesRepository.find();
   }
-
-  // findAllByUserId(user_id: number) {
-  //   return this.messagesRepository.find({
-  //     where: { user_id },
-  //     relations: {
-  //       user: true,
-  //       mentoringSession: true,
-  //     },
-  //   });
-  // }
 
   async findOne(id: number) {
     try {
@@ -141,12 +132,15 @@ export class MessagesService {
       });
       let dto: ReadMessage[] = [];
       if (notReadedMessages.length > 0) {
-        console.log('notReadedMessages length', notReadedMessages.length);
+        this.loggerService.log(
+          'notReadedMessages length',
+          notReadedMessages.length,
+        );
         dto = await this.readMessageRepository.save(readedUsers, {
           transaction: true,
         });
       } else {
-        console.log('all readed');
+        this.loggerService.log('all readed');
       }
       await qr.commitTransaction();
       await qr.release();
@@ -154,7 +148,7 @@ export class MessagesService {
     } catch (error) {
       await qr.rollbackTransaction();
       await qr.release();
-      console.log('error', error);
+      this.loggerService.log('error', error);
       ApiResponseService.BAD_REQUEST(
         error,
         'bad request in readMessage sessions',
@@ -163,11 +157,11 @@ export class MessagesService {
   }
 
   async create(createMessageDto: CreateMessageDto) {
-    console.log('check createMessageDto', createMessageDto);
+    this.loggerService.log('check createMessageDto', createMessageDto);
     const qr = this.messagesRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
-    console.log('check createMessageDto', createMessageDto);
+    this.loggerService.log('check createMessageDto', createMessageDto);
     try {
       const dto = await this.messagesRepository.save(createMessageDto);
       await qr.commitTransaction();

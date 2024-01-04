@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import * as cryptoJS from 'crypto-js';
-import { ConfigService } from '@nestjs/config';
-import { MailerConfig } from '@/config/mailer.config';
-import { UsersService } from '@/users/users.service';
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { MailerConfig } from '@/config/mailer.config';
+import { LoggerService } from '@/logger/logger.service';
+import { UsersService } from '@/users/users.service';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as cryptoJS from 'crypto-js';
+import * as nodemailer from 'nodemailer';
 
 type Id = {
   id: number;
@@ -31,6 +32,7 @@ export class MailerService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly loggerService: LoggerService,
     private readonly userService: UsersService,
   ) {}
 
@@ -72,7 +74,7 @@ export class MailerService {
           </div>
         `,
     });
-    console.log('send email result:', result);
+    this.loggerService.log('send email result:', result);
 
     transforter.close();
   }
@@ -98,7 +100,7 @@ export class MailerService {
           </div>
         `,
     });
-    console.log('send email result:', result);
+    this.loggerService.log('send email result:', result);
 
     transforter.close();
   }
@@ -213,7 +215,7 @@ export class MailerService {
           privKey,
         );
         if (isProvidedToken) {
-          console.log('redirect 맵', resetMailMap);
+          this.loggerService.log('redirect 맵', resetMailMap);
           resetMailMap.delete(email);
           const sendTime = +new Date();
           const checkPrivKey = this.configService.get<string>(
@@ -235,7 +237,7 @@ export class MailerService {
             used: false,
           });
 
-          console.log('redirect 맵 재설정 후', resetMailMap);
+          this.loggerService.log('redirect 맵 재설정 후', resetMailMap);
 
           clientUrl += `?q=${encodeURIComponent(`e=${email}&tkn=${newToken}`)}`;
         }
@@ -255,7 +257,7 @@ export class MailerService {
         privKey,
       );
       if (compareToken === token) {
-        console.log('token matched!');
+        this.loggerService.log('token matched!');
         return compareToken;
       }
     }
@@ -281,14 +283,14 @@ export class MailerService {
 
     if (hasTokenInServer) {
       if (tokenInfo.used) {
-        console.log('already used token');
+        this.loggerService.log('already used token');
         flag = 'already used';
       } else if (availableToken) {
-        console.log('token is matched!');
+        this.loggerService.log('token is matched!');
         const user = await this.userService.findOneByEmail(email);
 
         if (!user) {
-          console.log('available email');
+          this.loggerService.log('available email');
           flag = 'success';
           resolver(flag);
           checkMailMap.set(token, Object.assign(tokenInfo, { used: true }));

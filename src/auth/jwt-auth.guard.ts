@@ -1,4 +1,5 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +12,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private loggerService: LoggerService,
   ) {
     super();
   }
@@ -20,7 +22,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const ws = context.switchToWs();
     if (ws.getClient() instanceof Socket) {
       const token = ws.getClient().handshake.auth.token;
-      console.log('🛠️ authorization check', token);
+      this.loggerService.log('🛠️ authorization check', token);
 
       if (!token) ApiResponseService.UNAUTHORIZED('no token');
 
@@ -28,7 +30,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const value = await this.jwtService.verifyAsync(token, {
           secret: this.configService.get<string>('jwt.privkey'),
         });
-        console.log('🛠️ check verified value', value);
+        this.loggerService.log('🛠️ check verified value', value);
         const req = ws.getClient() as Request;
         value['userId'] = value.sub;
         delete value['sub'];
@@ -36,7 +38,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
         return true;
       } catch (error) {
-        console.log('🐛 check error:', error);
+        this.loggerService.log('🐛 check error:', error);
         ApiResponseService.UNAUTHORIZED(error);
       }
     } else {
@@ -44,7 +46,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         .getRequest()
         .headers['authorization']?.slice('Bearer '.length);
 
-      console.log('🛠️ authorization check', token);
+      this.loggerService.log('🛠️ authorization check', token);
 
       if (!token) ApiResponseService.UNAUTHORIZED('no token');
 
@@ -52,7 +54,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const value = await this.jwtService.verifyAsync(token, {
           secret: this.configService.get<string>('jwt.privkey'),
         });
-        console.log('🛠️ check verified value', value);
+        this.loggerService.log('🛠️ check verified value', value);
 
         const req = ctx.getRequest() as Request;
         value['userId'] = value.sub;
@@ -61,24 +63,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
         return true;
       } catch (error) {
-        console.log('🐛 check error:', error);
+        this.loggerService.log('🐛 check error:', error);
         ApiResponseService.UNAUTHORIZED(error);
       }
     }
-
-    // value
-    //   .then((val) => {
-    //     console.log('🛠️ authorization check', val);
-    //   })
-    //   .catch((err) => {
-    //     console.log('🐛 authorization check', err);
-    //   });
-    // this.auth;
   }
 
   handleRequest(err, user, info) {
     // You can throw an exception based on either "info" or "err" arguments
-    console.log(err, user, info);
+    this.loggerService.log(err, user, info);
     if (err || !user) {
       throw err || ApiResponseService.UNAUTHORIZED(info.message);
     }

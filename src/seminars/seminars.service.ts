@@ -1,17 +1,18 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 import { UsersService } from '@/users/users.service';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as cryptoJS from 'crypto-js';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Repository } from 'typeorm';
 import { CreateSeminarDto } from './dto/create-seminar.dto';
 import { UpdateSeminarDto } from './dto/update-seminar.dto';
+import { Cover } from './entities/cover.entity';
 import { SeminarParticipant } from './entities/seminar-participant.entity';
 import { Seminar } from './entities/seminar.entity';
-import { Cover } from './entities/cover.entity';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as cryptoJS from 'crypto-js';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SeminarsService {
@@ -19,6 +20,7 @@ export class SeminarsService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly loggerService: LoggerService,
     private readonly usersService: UsersService,
     @InjectRepository(Cover)
     private readonly coverRepository: Repository<Cover>,
@@ -33,7 +35,6 @@ export class SeminarsService {
   }
 
   findAll() {
-    // return `This action returns all seminars`;
     return this.seminarRepository.find({
       relations: {
         user: true,
@@ -56,7 +57,6 @@ export class SeminarsService {
   }
 
   async findOne(id: number) {
-    // return `This action returns a #${id} seminar`;
     try {
       return await this.seminarRepository.findOne({
         where: { id },
@@ -101,7 +101,6 @@ export class SeminarsService {
   }
 
   async create(createSeminarDto: CreateSeminarDto) {
-    // return 'This action adds a new seminar';
     const qr = this.seminarRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
@@ -118,7 +117,6 @@ export class SeminarsService {
   }
 
   async update(id: number, updateSeminarDto: UpdateSeminarDto) {
-    // return `This action updates a #${id} seminar`;
     const qr = this.seminarRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
@@ -126,14 +124,14 @@ export class SeminarsService {
       await this.seminarRepository.findOneOrFail({
         where: { id },
       });
-      console.log('ok');
+      this.loggerService.log('ok');
       const dto = await this.seminarRepository.update(id, updateSeminarDto);
-      console.log('fail?');
+      this.loggerService.log('fail?');
       await qr.commitTransaction();
       await qr.release();
       return dto;
     } catch (error) {
-      console.log('error', error);
+      this.loggerService.log('error', error);
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail update seminar');
@@ -141,7 +139,6 @@ export class SeminarsService {
   }
 
   async softRemove(id: number) {
-    // return `This action removes a #${id} seminar`;
     const qr = this.seminarRepository.manager.connection.createQueryRunner();
     await qr.startTransaction();
     try {
@@ -156,7 +153,6 @@ export class SeminarsService {
     }
   }
   async remove(id: number) {
-    // return `This action removes a #${id} seminar`;
     const qr = this.seminarRepository.manager.connection.createQueryRunner();
     await qr.startTransaction();
     try {
@@ -205,7 +201,7 @@ export class SeminarsService {
     const qr =
       this.seminarParticipantRepository.manager.connection.createQueryRunner();
 
-    console.log(seminar_id, user_id);
+    this.loggerService.log(seminar_id, user_id);
 
     try {
       await this.usersService
@@ -237,7 +233,7 @@ export class SeminarsService {
         await qr.release();
         return dto;
       } catch (error) {
-        console.log(error);
+        this.loggerService.log(error);
         await qr.rollbackTransaction();
         await qr.release();
         ApiResponseService.BAD_REQUEST(error, 'bad request');
@@ -304,7 +300,7 @@ export class SeminarsService {
       await qr.release();
       return true;
     } catch (error) {
-      console.log('error', error);
+      this.loggerService.log('error', error);
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail cancel join');

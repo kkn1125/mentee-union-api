@@ -1,5 +1,6 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
 import { JwtAuthGuard } from '@/auth/jwt-auth.guard';
+import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
 import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
 import {
@@ -25,14 +26,13 @@ import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CheckEmailPipe } from './pipe/check-email.pipe';
 import { UsersService } from './users.service';
-import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(
+    private readonly loggerService: LoggerService,
     private readonly mailerService: MailerService,
     private readonly usersService: UsersService,
-    private readonly logger: LoggerService,
   ) {}
 
   @Get()
@@ -156,7 +156,7 @@ export class UsersController {
     )
     createUserDto: CreateUserDto,
   ) {
-    this.logger.debug(createUserDto);
+    this.loggerService.debug(createUserDto);
     return this.usersService.create(createUserDto);
   }
 
@@ -186,10 +186,9 @@ export class UsersController {
     @Req() req: Request,
     @UploadedFile() profile: Express.Multer.File,
   ) {
-    console.log('profile', profile);
+    this.loggerService.log('profile', profile);
     await this.usersService.updateProfile(req.user.userId, profile);
     return ApiResponseService.SUCCESS('success');
-    // ApiResponseService.BAD_REQUEST('access denied', 'no exists session');
   }
 
   @Put(':id(\\d+)')
@@ -278,7 +277,6 @@ export class UsersController {
   @Post('points')
   async userPointsAsJwt(
     @Req() req: Request,
-    // @Res({ passthrough: true }) res: Response,
     @Body(
       new ValidationPipe({
         transform: true,
@@ -324,7 +322,7 @@ export class UsersController {
         if (upgraded === null) {
           ApiResponseService.BAD_REQUEST('fail upgrade', receiver.id);
         } else {
-          console.log('upgraded receiver id:', receiver.id);
+          this.loggerService.log('upgraded receiver id:', receiver.id);
         }
       }
 
@@ -333,7 +331,7 @@ export class UsersController {
         if (upgraded === null) {
           ApiResponseService.BAD_REQUEST('fail upgrade', giver.id);
         } else {
-          console.log('upgraded giver id:', receiver.id);
+          this.loggerService.log('upgraded giver id:', receiver.id);
         }
       }
 
@@ -341,16 +339,13 @@ export class UsersController {
         ApiResponseService.BAD_REQUEST('not allowed recommend same person');
       } else {
         ApiResponseService.SUCCESS('success give points to receiver');
-        // return result;
       }
     }
   }
 
   @Delete('dormant')
   async restore(@Body('email', CheckEmailPipe) email: string) {
-    // console.log('email', email);
     const flag = await this.mailerService.sendAuthMail(email);
-    // console.log(flag);
     if (flag === 'success') {
       await this.usersService.restoreDormantAccount(email);
       ApiResponseService.SUCCESS('success restore dormant account');

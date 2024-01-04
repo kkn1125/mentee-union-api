@@ -8,17 +8,20 @@ import {
 import { Response } from 'express';
 import { Observable, TimeoutError, catchError, map, throwError } from 'rxjs';
 import { ApiResponseService } from './api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @Injectable()
 export class ApiResponseInterceptor implements NestInterceptor {
-  constructor(private readonly apiResponseService: ApiResponseService) {}
+  constructor(
+    private readonly apiResponseService: ApiResponseService,
+    private readonly loggerService: LoggerService,
+  ) {}
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
-    console.log('인터셉터');
+    this.loggerService.debug('인터셉터');
     return next.handle().pipe(
       map((data) => {
-        // console.log('인터셉터 데이터', data);
         return this.apiResponseService.output({
           ok: response.statusCode === 200 || response.statusCode === 201,
           code: response.statusCode,
@@ -26,7 +29,7 @@ export class ApiResponseInterceptor implements NestInterceptor {
         });
       }),
       catchError((err) => {
-        console.log('err', err);
+        this.loggerService.error('interceptor error:', err);
         if (err instanceof TimeoutError) {
           return throwError(() => new RequestTimeoutException());
         }

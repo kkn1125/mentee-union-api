@@ -5,9 +5,7 @@ export function IsBefore(
   property: string,
   validationOptions?: ValidationOptions,
 ) {
-  // console.log(property, validationOptions);
   return function (object: object, propertyName: string) {
-    // console.log('inner function', object, propertyName);
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

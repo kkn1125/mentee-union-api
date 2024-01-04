@@ -1,19 +1,21 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 import {
   ArgumentMetadata,
   Inject,
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-import { SeminarsService } from '../seminars.service';
-import { Request } from 'express';
 import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { SeminarsService } from '../seminars.service';
 
 @Injectable()
 export class UpdatePipe implements PipeTransform {
   constructor(
     @Inject(REQUEST)
     private readonly request: Request,
+    private readonly loggerService: LoggerService,
     private readonly seminarsService?: SeminarsService,
   ) {}
 
@@ -25,7 +27,7 @@ export class UpdatePipe implements PipeTransform {
         .getRepository()
         .findOneOrFail({ where: { id: +this.request.params.id } });
 
-      console.log({
+      this.loggerService.log({
         ...existingData,
         ...value,
       });

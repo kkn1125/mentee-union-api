@@ -6,10 +6,9 @@ export class CheckEmailPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
     if (metadata.type !== 'body') return value;
 
-    // console.log('body check', metadata.data, value);
     /* email format regex */
     /**
-     * 규칙은 다음과 같습니다.
+     * 규칙
      * 1. 사용자명은 2자 이상, 영문부터 시작
      * 2. 도메인은 2자 이상, 영문부터 시작
      * 3. 최상위 도메인은 2자 이상, 영문만 취급

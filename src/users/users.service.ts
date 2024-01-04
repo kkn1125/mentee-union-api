@@ -1,19 +1,19 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { Grade } from '@/grades/entities/grade.entity';
+import { LoggerService } from '@/logger/logger.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as cryptoJS from 'crypto-js';
+import * as fs from 'fs';
+import * as path from 'path';
 import { EntityNotFoundError, QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GivePointsDto } from './dto/give-points.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
-import { UserRecommend } from './entities/user-recommend.entity';
-import * as fs from 'fs';
-import * as path from 'path';
 import { Profile } from './entities/profile.entity';
-import { Forum } from '@/forums/entities/forum.entity';
-import { Grade } from '@/grades/entities/grade.entity';
+import { UserRecommend } from './entities/user-recommend.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +21,7 @@ export class UsersService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly loggerService: LoggerService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserRecommend)
@@ -204,7 +205,7 @@ export class UsersService {
         });
         await qr.commitTransaction();
         await qr.release();
-        console.log('check dto', dto);
+        this.loggerService.log('check dto', dto);
       } catch (error) {
         await qr.rollbackTransaction();
         await qr.release();
@@ -346,8 +347,8 @@ export class UsersService {
         receiver_id,
       },
     });
-    console.log('isAlreadyGived', isAlreadyGived);
-    console.log('isAlreadyGived', !!isAlreadyGived);
+    this.loggerService.log('isAlreadyGived', isAlreadyGived);
+    this.loggerService.log('isAlreadyGived', !!isAlreadyGived);
     return !!isAlreadyGived;
   }
 
@@ -573,7 +574,7 @@ export class UsersService {
       ApiResponseService.BAD_REQUEST('error creating profile file');
       return;
     }
-    // console.log(profile);
+    // this.loggerService.log(profile);
 
     const qr = this.profileRepository.manager.connection.createQueryRunner();
 

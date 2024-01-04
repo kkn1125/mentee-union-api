@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ApiResponseService } from './api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @Module({
-  providers: [ApiResponseService],
+  providers: [LoggerService, ApiResponseService],
   exports: [ApiResponseService],
 })
 export class ApiResponseModule {}

@@ -1,3 +1,4 @@
+import { LoggerService } from '@/logger/logger.service';
 import {
   ArgumentsHost,
   Catch,
@@ -10,47 +11,35 @@ import { ApiResponseService } from './api-response.service';
 
 @Catch()
 export class ApiResponseFilter implements ExceptionFilter {
-  constructor(private readonly apiResponseService: ApiResponseService) {}
+  constructor(
+    private readonly apiResponseService: ApiResponseService,
+    private readonly loggerService: LoggerService,
+  ) {}
 
   catch(exception: HttpException, host: ArgumentsHost) {
-    console.trace('catch trace');
+    this.loggerService.trace('catch trace');
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // const request = ctx.getRequest<Request>();
-    // console.log('필터');
     const status = exception.getStatus?.() || 500;
     const message = exception.getResponse?.() || 'Internal Server Error';
     const detail = exception.cause as string | string[];
 
     const hasMessage =
       typeof message === 'object' && 'message' in (message as any);
-    // console.log(Object.keys(exception));
-    // console.log(exception.name);
-    // console.log('status', status);
-    // console.log('message', message);
-    // console.log('detail', detail);
-    // console.log(exception.message);
-    // console.log(exception.cause);
 
     if (exception instanceof QueryFailedError) {
-      //@ts-ignore
-      // console.log(exception.code);
       /* DB 에러 */
       /* 예외 처리는 sentry에서 db 예외처리를 중요하게 다루어야 됨. */
       response.status(status).json(
         this.apiResponseService.output({
           ok: status === 200 || status === 201,
           code: status,
-          // message: hasMessage ? message['message'] : message,
-          // detail: detail,
           message: (exception as unknown as QueryFailedErrors).code,
           detail: (exception as unknown as QueryFailedErrors).sqlMessage,
-          // path: request.url,
-          // timestamp: new Date().toISOString(),
         }),
       );
     } else {
-      console.log('일반에러', exception, message);
+      this.loggerService.log('일반에러', exception, message);
       /* 일반 에러 */
       response.status(status).json(
         this.apiResponseService.output({
@@ -58,8 +47,6 @@ export class ApiResponseFilter implements ExceptionFilter {
           code: status,
           message: hasMessage ? message['message'] : message,
           detail: detail,
-          // path: request.url,
-          // timestamp: new Date().toISOString(),
         }),
       );
     }

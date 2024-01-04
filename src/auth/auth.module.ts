@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { MailerModule } from '@/mailer/mailer.module';
+import { LoggerService } from '@/logger/logger.service';
 
 @Module({
   imports: [

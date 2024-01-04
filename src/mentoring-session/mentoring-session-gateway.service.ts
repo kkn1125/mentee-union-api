@@ -1,17 +1,17 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 import { Mentoring } from '@/mentoring/entities/mentoring.entity';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 import { CreateMentoringSessionDto } from './dto/create-mentoring-session.dto';
 import { UpdateMentoringSessionDto } from './dto/update-mentoring-session.dto';
 import { MentoringSession } from './entities/mentoring-session.entity';
-import { User } from '@/users/entities/user.entity';
-import { UsersService } from '@/users/users.service';
 
 @Injectable()
 export class MentoringSessionGatewayService {
   constructor(
+    private readonly loggerService: LoggerService,
     @InjectRepository(MentoringSession)
     private readonly mentoringSessionRepository: Repository<MentoringSession>,
     @InjectRepository(Mentoring)
@@ -163,8 +163,6 @@ export class MentoringSessionGatewayService {
     const qr =
       this.mentoringSessionRepository.manager.connection.createQueryRunner();
 
-    // let dto: MentoringSession;
-
     await qr.startTransaction();
 
     try {
@@ -175,12 +173,12 @@ export class MentoringSessionGatewayService {
         },
       );
 
-      console.log('mentoringsession dto', dto);
+      this.loggerService.log('mentoringsession dto', dto);
       await qr.commitTransaction();
       await qr.release();
       return dto;
     } catch (error) {
-      console.log('mentoring-session create error', error);
+      this.loggerService.log('mentoring-session create error', error);
       await qr.rollbackTransaction();
       await qr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail create mentoring session');
@@ -213,7 +211,7 @@ export class MentoringSessionGatewayService {
 
       return dto;
     } catch (error) {
-      console.log('mentoring create error', error);
+      this.loggerService.log('mentoring create error', error);
       await mentoringQr.rollbackTransaction();
       await mentoringQr.release();
       ApiResponseService.BAD_REQUEST(error, 'fail create mentoring');

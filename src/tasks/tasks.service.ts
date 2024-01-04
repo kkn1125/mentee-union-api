@@ -5,6 +5,6 @@ import { Cron } from '@nestjs/schedule';
 export class TasksService {
   @Cron('*/5 * * * * *')
   handleTestCron() {
-    console.log('test tictoc');
+    // console.log('test tictoc');
   }
 }

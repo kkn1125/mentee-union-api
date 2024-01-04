@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
 import { ApiResponseService } from '@/api-response/api-response.service';
-// import { AuthGuard } from '@nestjs/passport';
+import { LoggerService } from '@/logger/logger.service';
 
 export type ChannelTokenDto = {
   token: string;
@@ -11,7 +11,10 @@ export type ChannelTokenDto = {
 
 @Injectable()
 export class SystemSocketAuthGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly loggerService: LoggerService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest() as Request;
@@ -22,7 +25,7 @@ export class SystemSocketAuthGuard implements CanActivate {
     if (!result) {
       ApiResponseService.UNAUTHORIZED('invalid channel token');
     }
-    console.log('check channel token', channelToken, result);
+    this.loggerService.log('check channel token', channelToken, result);
     request.channels = { token: channelToken };
 
     return result;

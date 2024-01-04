@@ -1,14 +1,14 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@/mailer/mailer.service';
 import { User } from '@/users/entities/user.entity';
 import { UsersService } from '@/users/users.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-import { MailerService } from '@/mailer/mailer.service';
 import * as cryptoJS from 'crypto-js';
+import { Repository } from 'typeorm';
 @Injectable()
 export class AuthService {
   private readonly TRY_SIGN_IN_FAIL_LIMIT_COUNT = 10;
@@ -19,24 +19,13 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly loggerService: LoggerService,
   ) {}
 
-  // async validateUser(username: string, pass: string): Promise<any> {
-  //   const user = await this.usersService.findOneByUsername(username);
-  //   if (user && user.password === pass) {
-  //     const { password, ...result } = user;
-  //     return result;
-  //   }
-  //   return null;
-  // }
-
   async signIn(email: string, password: string) {
-    // const userRepository = this.usersService.getRepository();
     const user = await this.usersService.findOneByEmail(email);
 
     const userQr = this.userRepository.manager.connection.createQueryRunner();
-
-    // console.log(user);
 
     if (user === null) {
       // not found exception
@@ -53,15 +42,6 @@ export class AuthService {
       email,
       password,
     );
-
-    // if (user.fail_login_count >= this.TRY_SIGN_IN_FAIL_LIMIT_COUNT) {
-    //   const updated = new Date(user.updated_at);
-    //   updated.setMinutes(updated.getMinutes() + 10);
-    //   const isAfter = new Date();
-    //   if (isAfter > updated) {
-    //     await this.usersService.update(user.id, { fail_login_count: 0 });
-    //   }
-    // }
 
     /* 로그인 실패 초과 시 */
     if (user.fail_login_count >= this.TRY_SIGN_IN_FAIL_LIMIT_COUNT) {
@@ -95,7 +75,6 @@ export class AuthService {
           username: user.username,
           email: user.email,
           phone_number: user.phone_number,
-          // role: user.role,
           last_sign_in: user.last_login_at,
         };
 
@@ -145,7 +124,6 @@ export class AuthService {
         username: user.username,
         email: user.email,
         phone_number: user.phone_number,
-        // role: user.role,
         last_sign_in: user.last_login_at,
       };
 

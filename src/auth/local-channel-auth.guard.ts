@@ -1,8 +1,8 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Request } from 'express';
 import { ApiResponseService } from '@/api-response/api-response.service';
-// import { AuthGuard } from '@nestjs/passport';
+import { LoggerService } from '@/logger/logger.service';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import { AuthService } from './auth.service';
 
 export type ChannelTokenDto = {
   token: string;
@@ -11,7 +11,10 @@ export type ChannelTokenDto = {
 
 @Injectable()
 export class SocketAuthGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly loggerService: LoggerService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest() as Request;
@@ -31,7 +34,7 @@ export class SocketAuthGuard implements CanActivate {
         ApiResponseService.UNAUTHORIZED(error, 'not found user');
       }
     }
-    console.log('check channel token', channelToken, result);
+    this.loggerService.log('check channel token', channelToken, result);
     request.channels = { token: channelToken, user_id: channelUserId };
 
     return result;

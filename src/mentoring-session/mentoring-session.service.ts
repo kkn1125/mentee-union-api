@@ -1,4 +1,5 @@
 import { ApiResponseService } from '@/api-response/api-response.service';
+import { LoggerService } from '@/logger/logger.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
@@ -9,6 +10,7 @@ import { MentoringSession } from './entities/mentoring-session.entity';
 @Injectable()
 export class MentoringSessionService {
   constructor(
+    private readonly loggerService: LoggerService,
     @InjectRepository(MentoringSession)
     private readonly mentoringSessionRepository: Repository<MentoringSession>,
   ) {}
@@ -84,7 +86,7 @@ export class MentoringSessionService {
           transaction: true,
         },
       );
-      console.log('mentoringsession dto', dto);
+      this.loggerService.log('mentoringsession dto', dto);
       await qr.commitTransaction();
       await qr.release();
       return dto;

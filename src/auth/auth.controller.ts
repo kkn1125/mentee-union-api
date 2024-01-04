@@ -1,3 +1,4 @@
+import { ApiResponseService } from '@/api-response/api-response.service';
 import { LoggerService } from '@/logger/logger.service';
 import {
   Body,
@@ -9,26 +10,25 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/signin.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
-import { Request } from 'express';
-import { ApiResponseService } from '@/api-response/api-response.service';
 import { SocketAuthGuard } from './local-channel-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly logger: LoggerService,
+    private readonly loggerService: LoggerService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   signIn(@Body() signinDto: SigninDto) {
-    this.logger.debug('signinDto', signinDto);
+    this.loggerService.debug('signinDto', signinDto);
     return this.authService.signIn(signinDto.email, signinDto.password);
   }
 
@@ -55,28 +55,9 @@ export class AuthController {
     return this.authService.verifySocketToken(req.channels.token);
   }
 
-  // @UseGuards(LocalAuthGuard)
-  // @HttpCode(HttpStatus.OK)
-  // @Post('update')
-  // updatePassword(
-  //   @Body('session') session: string,
-  //   @Body('email') email: string,
-  //   @Body('new_password') newPassword: string,
-  // ) {
-  //   this.logger.debug('updateAuthDto', newPassword);
-
-  //   if (session === 'auth-update') {
-  //     return this.authService.updatePassword(email, newPassword);
-  //   } else {
-  //     ApiResponseService.FORBIDDEN('not allowed access');
-  //   }
-  // }
-
-  // @UseGuards(AuthGuard)
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Req() req: Request) {
-    // console.log('controller profile', req.user);
     try {
       await this.authService.checkUser(req.user.userId);
       return req.user;

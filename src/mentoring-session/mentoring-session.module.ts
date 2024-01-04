@@ -1,5 +1,6 @@
 import { AuthModule } from '@/auth/auth.module';
 import { SocketAuthGuard } from '@/auth/local-channel-auth.guard';
+import { LoggerModule } from '@/logger/logger.module';
 import { Mentoring } from '@/mentoring/entities/mentoring.entity';
 import { Message } from '@/messages/entities/message.entity';
 import { ReadMessage } from '@/messages/entities/read-message.entity';
@@ -23,6 +24,7 @@ import { MentoringSessionService } from './mentoring-session.service';
       Message,
       ReadMessage,
     ]),
+    LoggerModule,
     AuthModule,
     UsersModule,
   ],
