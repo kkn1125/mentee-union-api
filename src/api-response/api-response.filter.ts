@@ -8,6 +8,7 @@ import {
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { ApiResponseService } from './api-response.service';
+import * as Sentry from '@sentry/node';
 
 @Catch()
 export class ApiResponseFilter implements ExceptionFilter {
@@ -30,6 +31,16 @@ export class ApiResponseFilter implements ExceptionFilter {
     if (exception instanceof QueryFailedError) {
       /* DB 에러 */
       /* 예외 처리는 sentry에서 db 예외처리를 중요하게 다루어야 됨. */
+
+      const transaction = Sentry.startTransaction({
+        op: (exception as unknown as QueryFailedErrors).code,
+        name: (exception as unknown as QueryFailedErrors).sqlMessage,
+      });
+
+      Sentry.captureException(exception);
+
+      transaction.finish();
+
       response.status(status).json(
         this.apiResponseService.output({
           ok: status === 200 || status === 201,
@@ -40,6 +51,16 @@ export class ApiResponseFilter implements ExceptionFilter {
       );
     } else {
       this.loggerService.log('일반에러', exception, message);
+
+      const transaction = Sentry.startTransaction({
+        op: '' + status,
+        name: hasMessage ? message['message'] : message,
+      });
+
+      Sentry.captureException(exception);
+
+      transaction.finish();
+
       /* 일반 에러 */
       response.status(status).json(
         this.apiResponseService.output({
