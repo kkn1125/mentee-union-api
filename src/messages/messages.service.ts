@@ -106,7 +106,7 @@ export class MessagesService {
     }
   }
 
-  async readSessionsMessage(user_id: number, session_id: number) {
+  async findSessionsHaveNotReadedMessages(user_id: number, session_id: number) {
     const session = await this.mentoringSessionRepository.findOne({
       where: {
         id: session_id,
@@ -117,15 +117,21 @@ export class MessagesService {
         },
       },
     });
+    return session.messages.filter((message) =>
+      message.readedUsers.every((readed) => readed.user_id !== user_id),
+    );
+  }
 
+  async readSessionsMessage(user_id: number, session_id: number) {
     const qr =
       this.readMessageRepository.manager.connection.createQueryRunner();
 
     await qr.startTransaction();
 
     try {
-      const notReadedMessages = session.messages.filter((message) =>
-        message.readedUsers.every((readed) => readed.user_id !== user_id),
+      const notReadedMessages = await this.findSessionsHaveNotReadedMessages(
+        user_id,
+        session_id,
       );
       const readedUsers = notReadedMessages.map((message) => {
         const readMessage = new ReadMessage();
