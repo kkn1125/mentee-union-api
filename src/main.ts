@@ -1,4 +1,3 @@
-import { ConsoleLogger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import * as Sentry from '@sentry/node';
@@ -51,10 +50,16 @@ async function bootstrap() {
   });
 
   app.useGlobalFilters(
-    new ApiResponseFilter(app.get<ApiResponseService>(ApiResponseService)),
+    new ApiResponseFilter(
+      app.get<ApiResponseService>(ApiResponseService),
+      app.get<LoggerService>(LoggerService),
+    ),
   );
   app.useGlobalInterceptors(
-    new ApiResponseInterceptor(app.get<ApiResponseService>(ApiResponseService)),
+    new ApiResponseInterceptor(
+      app.get<ApiResponseService>(ApiResponseService),
+      app.get<LoggerService>(LoggerService),
+    ),
   );
 
   app.enableCors({
