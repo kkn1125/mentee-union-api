@@ -1,13 +1,16 @@
-use `mentee-union-dev`;
-
+use `mentee-union`;
+#drop table grade;
+delete from grade;
+alter table grade auto_increment=1;
 insert into
         grade (`name`, `description`)
         values
-        ("브론즈", "매우 낮음"),
-        ("실버", "중간"),
-        ("골드", "높음"),
-        ("다이아몬드", "조금 높음"),
-        ("플래티넘", "매우 높음");
+        ("mentee0", "초기 멘티 등급입니다. 멘토링 커뮤니티에 적응하고 기본적인 활동을 시작하는 단계입니다."),
+        ("mentee1", "경험이 더 많은 멘티 등급입니다. 멘토링 활동을 통한 성장과 경험을 쌓는 단계입니다."),
+        ("mentor0", "신규 멘토 등급니다. 멘토로서의 첫 경험을 쌓고, 멘티들에게 지식을 전달하는 단계입니다."),
+        ("mentor1", "경험이 더 많은 멘토 등급입니다. 보다 전문적인 멘토링 제공 및 커뮤니티 내 리더십을 강화하는 단계입니다."),
+        ("mentor2", "고급 멘토 등급입니다. 멘토링 프로그램 개선에 기여하고 신규 멘토 육성에 노력하는 단계입니다.");
+select * from grade;
 
 show create table seminar;
 select version();
