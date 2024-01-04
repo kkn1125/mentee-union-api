@@ -108,8 +108,6 @@ const gradeValues = () => ({
   softDelete: jest.fn(),
 });
 
-type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
-
 describe('UsersService', () => {
   let service: UsersService;
   let userRepository: MockRepository<User>;
@@ -141,6 +139,10 @@ describe('UsersService', () => {
 
     service = module.get<UsersService>(UsersService);
     userRepository = module.get<MockRepository<User>>(getRepositoryToken(User));
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
