@@ -213,71 +213,13 @@ export class UsersService {
       }
     }
 
-    // 등급 인덱스 초과 시 최고 레벨이기 때문에 현상 유지
+    /* 등급 인덱스 초과 시 최고 레벨이기 때문에 현상 유지 */
     return await this.userRepository.findOne({
       where: {
         id: user_id,
       },
     });
   }
-
-  // async findOneProfileAll(id: number) {
-  //   try {
-  //     return await this.userRepository.findOne({
-  //       where: { id },
-  //       select: [
-  //         'id',
-  //         'grade_id',
-  //         'username',
-  //         'email',
-  //         'phone_number',
-  //         'birth',
-  //         'gender',
-  //         'auth_email',
-  //         'level',
-  //         'points',
-  //         'fail_login_count',
-  //         'last_login_at',
-  //         'status',
-  //         'deleted_at',
-  //         'created_at',
-  //         'updated_at',
-  //       ],
-  //       relations: {
-  //         seminars: {
-  //           user: true,
-  //         },
-  //         seminarParticipants: {
-  //           seminar: {
-  //             category: true,
-  //             user: {
-  //               profiles: true,
-  //             },
-  //           },
-  //         },
-  //         forums: true,
-  //         givers: true,
-  //         receivers: true,
-  //         grade: true,
-  //         profiles: true,
-  //         mentorings: {
-  //           mentoringSession: {
-  //             messages: true,
-  //             category: true,
-  //           },
-  //         },
-  //         forumLikes: {
-  //           user: { profiles: true },
-  //           forum: {
-  //             user: true,
-  //           },
-  //         },
-  //       },
-  //     });
-  //   } catch (error) {
-  //     ApiResponseService.BAD_REQUEST(error, 'bad request finde one profile');
-  //   }
-  // }
 
   findOneByUsername(username: string) {
     return this.userRepository.findOne({ where: { username } });
@@ -371,7 +313,7 @@ export class UsersService {
 
     const points: number[] = [];
 
-    // 사용자 존재 검증
+    /* 사용자 존재 검증 */
     try {
       await Promise.all([
         this.userRepository.findOneOrFail({
@@ -391,7 +333,7 @@ export class UsersService {
       }
     }
 
-    // /* 추천 데이터 저장 */
+    /* 추천 데이터 저장 */
     try {
       await userRecommendQr.startTransaction();
       /* give session 저장 */
@@ -462,7 +404,6 @@ export class UsersService {
       await userQr.release();
     }
 
-    // ApiResponseService.SUCCESS('success give points to receiver');
     return true;
   }
 
@@ -587,7 +528,6 @@ export class UsersService {
       ApiResponseService.BAD_REQUEST('error creating profile file');
       return;
     }
-    // this.loggerService.log(profile);
 
     const qr = this.profileRepository.manager.connection.createQueryRunner();
 
@@ -621,11 +561,6 @@ export class UsersService {
       for (const profile of profiles) {
         await profile.remove({ transaction: true });
       }
-      // profiles.forEach((profile) => {
-      // });
-      // await this.profileRepository.delete({
-      //   user_id: id,
-      // });
       qr.commitTransaction();
       qr.release();
       return true;
@@ -635,11 +570,6 @@ export class UsersService {
       ApiResponseService.BAD_REQUEST('bad request');
     }
   }
-
-  // encodePassword(password: string) {
-  //   const privkey = this.configService.get<string>('encode.privkey');
-  //   return cryptoJS.HmacSHA256(password, privkey).toString(cryptoJS.enc.Hex);
-  // }
 
   encodingPassword(email: string, password: string) {
     const encodeKey = this.configService.get<string>('encode.privkey');
