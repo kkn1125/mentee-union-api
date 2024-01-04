@@ -467,18 +467,31 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const qr = this.userRepository.manager.connection.createQueryRunner();
+    const user = await this.findOne(id);
+    if (user) {
+      if ('password' in updateUserDto) {
+        updateUserDto.password = this.encodingPassword(
+          user.email,
+          updateUserDto.password,
+        );
+      }
 
-    await qr.startTransaction();
+      const qr = this.userRepository.manager.connection.createQueryRunner();
 
-    try {
-      const dto = await this.userRepository.update(id, updateUserDto);
-      await qr.commitTransaction();
-      await qr.release();
-      return dto;
-    } catch (error) {
-      await qr.rollbackTransaction();
-      await qr.release();
+      await qr.startTransaction();
+
+      try {
+        const dto = await this.userRepository.update(id, updateUserDto);
+        await qr.commitTransaction();
+        await qr.release();
+        return dto;
+      } catch (error) {
+        await qr.rollbackTransaction();
+        await qr.release();
+        ApiResponseService.BAD_REQUEST(error, 'fail update user', id);
+      }
+    } else {
+      ApiResponseService.NOT_FOUND('not found user', id);
     }
   }
 
