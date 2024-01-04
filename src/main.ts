@@ -7,13 +7,15 @@ import { ApiResponseFilter } from './api-response/api-response.filter';
 import { ApiResponseInterceptor } from './api-response/api-response.interceptor';
 import { ApiResponseService } from './api-response/api-response.service';
 import { AppModule } from './app.module';
+import { LoggerService } from './logger/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
+  const logger = app.get(LoggerService);
+  app.useLogger(logger);
   const configService = app.get(ConfigService);
-  const logger = new ConsoleLogger('System');
   const port = configService.get<number>('server.port');
   const dsn = configService.get<string>('server.dns');
 
