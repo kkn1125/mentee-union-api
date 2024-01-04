@@ -13,7 +13,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema mentee-union
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mentee-union` DEFAULT CHARACTER SET utf8 ;
+CREATE SCHEMA IF NOT EXISTS `mentee-union` DEFAULT CHARACTER SET utf8mb4 ;
 USE `mentee-union` ;
 
 -- -----------------------------------------------------
@@ -23,9 +23,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`grade` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -40,17 +40,17 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `email` VARCHAR(100) NOT NULL,
   `phone_number` VARCHAR(45) NOT NULL,
   `birth` DATE NOT NULL,
-  `gender` TINYINT(10) NOT NULL DEFAULT 0,
+  `gender` TINYINT NOT NULL DEFAULT 0,
   `password` VARCHAR(150) NOT NULL,
   `auth_email` TINYINT NOT NULL DEFAULT 0,
   `level` INT NOT NULL DEFAULT 0,
   `points` INT NOT NULL DEFAULT 0,
   `fail_login_count` INT NULL DEFAULT 0,
-  `last_login_at` TIMESTAMP NULL DEFAULT NULL,
+  `last_login_at` DATETIME NULL DEFAULT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'logout',
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
@@ -72,9 +72,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum` (
   `title` VARCHAR(50) NOT NULL,
   `content` LONGTEXT NOT NULL,
   `view_count` INT NOT NULL DEFAULT 0,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_forums_user_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_forums_user`
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`category` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -111,15 +111,15 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar` (
   `view_count` INT NOT NULL DEFAULT 0,
   `meeting_place` VARCHAR(150) NOT NULL,
   `limit_participant_amount` INT NOT NULL DEFAULT 0,
-  `recruit_start_date` TIMESTAMP NOT NULL,
-  `recruit_end_date` TIMESTAMP NOT NULL,
-  `seminar_start_date` TIMESTAMP NOT NULL,
-  `seminar_end_date` TIMESTAMP NOT NULL,
+  `recruit_start_date` DATETIME NOT NULL,
+  `recruit_end_date` DATETIME NOT NULL,
+  `seminar_start_date` DATETIME NOT NULL,
+  `seminar_end_date` DATETIME NOT NULL,
   `is_recruit_finished` TINYINT NOT NULL DEFAULT 0,
   `is_seminar_finished` TINYINT NOT NULL DEFAULT 0,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_seminars_host1_idx` (`host_id` ASC) VISIBLE,
   INDEX `fk_seminar_category1_idx` (`category_id` ASC) VISIBLE,
@@ -144,9 +144,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar_participant` (
   `seminar_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `is_confirm` TINYINT NOT NULL DEFAULT 0,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   INDEX `fk_seminars_has_users_users1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_seminars_has_users_seminars1_idx` (`seminar_id` ASC) VISIBLE,
   PRIMARY KEY (`id`, `user_id`, `seminar_id`),
@@ -164,15 +164,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mentee-union`.`mentor-matches`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mentee-union`.`mentor-matches` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `mentee-union`.`mentoring_session`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
@@ -185,9 +176,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `limit` INT NOT NULL DEFAULT 2,
   `password` VARCHAR(150) NULL,
   `is_private` TINYINT NOT NULL DEFAULT 0,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_mento-mentee-session_category1_idx` (`category_id` ASC) VISIBLE,
   CONSTRAINT `fk_mento-mentee-session_category1`
@@ -206,9 +197,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `mentee_id` INT NOT NULL,
   `mentoring_session_id` INT NOT NULL,
   `status` VARCHAR(45) NOT NULL DEFAULT 'waitlist',
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC) VISIBLE,
   INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
@@ -234,9 +225,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user_recommend` (
   `receiver_id` INT NOT NULL,
   `points` INT NOT NULL DEFAULT 1,
   `reason` VARCHAR(300) NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`, `giver_id`, `receiver_id`),
   INDEX `fk_users_has_users_users3_idx` (`receiver_id` ASC) VISIBLE,
   INDEX `fk_users_has_users_users2_idx` (`giver_id` ASC) VISIBLE,
@@ -261,9 +252,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`interest` (
   `user_id` INT NOT NULL,
   `name` VARCHAR(45) NOT NULL,
   `description` VARCHAR(150) NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   INDEX `fk_interest_user1_idx` (`user_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_interest_user1`
@@ -281,9 +272,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`terms` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(100) NOT NULL,
   `content` LONGTEXT NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -296,8 +287,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`allow_terms` (
   `terms_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `agree` TINYINT NOT NULL DEFAULT 0,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`, `terms_id`, `user_id`),
   INDEX `fk_terms_has_user_user1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_terms_has_user_terms1_idx` (`terms_id` ASC) VISIBLE,
@@ -322,8 +313,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`profile` (
   `user_id` INT NOT NULL,
   `new_name` VARCHAR(300) NULL DEFAULT NULL,
   `origin_name` VARCHAR(150) NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_profile_user1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_profile_user1`
@@ -344,9 +335,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`message` (
   `message` VARCHAR(300) NOT NULL,
   `is_top` TINYINT NOT NULL DEFAULT 0,
   `is_deleted` TINYINT NOT NULL DEFAULT 0,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_messages_mentoring_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
   INDEX `fk_message_user1_idx` (`user_id` ASC) VISIBLE,
@@ -390,7 +381,7 @@ ENGINE = InnoDB;
 -- Table `mentee-union`.`board`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mentee-union`.`board` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `type` VARCHAR(20) NOT NULL DEFAULT 'notice' COMMENT 'board type\n- faq\n- event\n- notice',
   `title` VARCHAR(50) NOT NULL,
@@ -398,9 +389,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`board` (
   `view_count` INT NOT NULL DEFAULT 0,
   `visible` TINYINT NOT NULL DEFAULT 1,
   `sequence` INT NOT NULL DEFAULT -1,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_board_user1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_board_user1`
@@ -418,10 +409,10 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum_like` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `forum_id` INT NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX `fk_user_has_forum_forum1_idx` (`forum_id` ASC) INVISIBLE,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
+  INDEX `fk_user_has_forum_forum1_idx` (`forum_id` ASC) VISIBLE,
   INDEX `fk_user_has_forum_user1_idx` (`user_id` ASC) VISIBLE,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_user_has_forum_user1`
@@ -445,9 +436,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`cover` (
   `seminar_id` INT NULL,
   `origin_name` VARCHAR(150) NOT NULL,
   `new_name` VARCHAR(200) NOT NULL,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` DATETIME NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT NOW(),
+  `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
   INDEX `fk_cover_seminar1_idx` (`seminar_id` ASC) VISIBLE,
   CONSTRAINT `fk_cover_seminar1`

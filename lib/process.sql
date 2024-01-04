@@ -9,6 +9,8 @@ insert into
         ("다이아몬드", "조금 높음"),
         ("플래티넘", "매우 높음");
 
+show create table seminar;
+select version();
 insert into
         category (name, description)
         values
