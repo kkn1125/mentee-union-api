@@ -30,21 +30,6 @@ async function bootstrap() {
     profilesSampleRate: 1.0,
   });
 
-  // const transaction = Sentry.startTransaction({
-  //   op: 'test',
-  //   name: 'My First Test Transaction',
-  // });
-
-  // setTimeout(() => {
-  //   try {
-  //     throw new Error('test error');
-  //   } catch (e) {
-  //     Sentry.captureException(e);
-  //   } finally {
-  //     transaction.finish();
-  //   }
-  // }, 99);
-
   app.setGlobalPrefix('/api', {
     exclude: [''],
   });
@@ -68,6 +53,7 @@ async function bootstrap() {
         ? [
             'http://localhost:3000',
             'http://localhost:5000',
+            'http://localhost:4173',
             'http://localhost:5173',
             'http://localhost:8080',
           ]
