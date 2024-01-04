@@ -1,4 +1,4 @@
-use `mentee-union`;
+use `mentee-union-dev`;
 
 insert into
         grade (`name`, `description`)
