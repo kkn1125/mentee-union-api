@@ -1,7 +1,9 @@
 use `mentee-union`;
 #drop table grade;
-delete from grade;
-alter table grade auto_increment=1;
+select * from user;
+select * from grade;
+delete from grade where id != 1;
+alter table grade auto_increment=2;
 insert into
         grade (`name`, `description`)
         values
