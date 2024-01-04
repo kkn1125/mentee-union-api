@@ -7,6 +7,7 @@ import { ApiResponseFilter } from './api-response/api-response.filter';
 import { ApiResponseInterceptor } from './api-response/api-response.interceptor';
 import { ApiResponseService } from './api-response/api-response.service';
 import { AppModule } from './app.module';
+import { MODE } from './config/constants';
 import { LoggerService } from './logger/logger.service';
 
 async function bootstrap() {
@@ -57,16 +58,20 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:5000',
-      'http://localhost:5173',
-      'http://localhost:8080',
-    ],
+    origin:
+      MODE === 'development'
+        ? [
+            'http://localhost:3000',
+            'http://localhost:5000',
+            'http://localhost:5173',
+            'http://localhost:8080',
+          ]
+        : ['https://menteeunion.kro.kr'],
   });
 
   await app.listen(port, () => {
     logger.log(`listening on http://localhost:${port}`);
+    logger.debug(`this server mode is ${MODE}`);
   });
 }
 

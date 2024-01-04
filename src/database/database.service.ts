@@ -1,3 +1,4 @@
+import { MODE } from '@/config/constants';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
@@ -13,6 +14,8 @@ type DatabaseProperties = {
   database: string;
 };
 
+const DEV = MODE !== 'production';
+
 @Injectable()
 export class DatabaseService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
@@ -22,7 +25,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
       'database',
     ) as DatabaseProperties;
     return {
-      type: 'mariadb',
+      type: DEV ? 'mysql' : 'mariadb',
       host: database.host,
       port: +database.port,
       username: database.username,
@@ -33,8 +36,8 @@ export class DatabaseService implements TypeOrmOptionsFactory {
       timezone: '+09:00',
       namingStrategy: new SnakeNamingStrategy(),
       migrations: [Initialize1700558286023],
-      // migrationsRun: true,
-      logging: true,
+      migrationsRun: DEV,
+      logging: DEV,
     };
   }
 }
