@@ -1,6 +1,7 @@
 use `mentee-union`;
 #drop table grade;
 select * from user;
+update user set auth_email=1;
 select * from grade;
 delete from grade where id != 1;
 alter table grade auto_increment=2;
