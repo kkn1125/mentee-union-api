@@ -57,7 +57,12 @@ async function bootstrap() {
             'http://localhost:5173',
             'http://localhost:8080',
           ]
-        : ['https://menteeunion.kro.kr'],
+        : [
+            'http://menteeunion.kro.kr',
+            'http://port-0-mentee-union-api-28f9s2blr1oy4j2.sel5.cloudtype.app',
+            'https://menteeunion.kro.kr',
+            'https://port-0-mentee-union-api-28f9s2blr1oy4j2.sel5.cloudtype.app',
+          ],
   });
 
   await app.listen(port, () => {

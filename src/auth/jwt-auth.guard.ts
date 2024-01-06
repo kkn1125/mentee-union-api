@@ -20,6 +20,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
     const ws = context.switchToWs();
+    this.loggerService.debug(ws.getClient().name);
     if (ws.getClient() instanceof Socket) {
       const token = ws.getClient().handshake.auth.token;
       this.loggerService.log('🛠️ authorization check', token);
@@ -30,7 +31,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const value = await this.jwtService.verifyAsync(token, {
           secret: this.configService.get<string>('jwt.privkey'),
         });
-        this.loggerService.log('🛠️ check verified value', value);
+        this.loggerService.log(
+          '🛠️ check verified value',
+          JSON.stringify(value, null, 2),
+        );
         const req = ws.getClient() as Request;
         value['userId'] = value.sub;
         delete value['sub'];
@@ -54,7 +58,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         const value = await this.jwtService.verifyAsync(token, {
           secret: this.configService.get<string>('jwt.privkey'),
         });
-        this.loggerService.log('🛠️ check verified value', value);
+        this.loggerService.log(
+          '🛠️ check verified value',
+          JSON.stringify(value, null, 2),
+        );
 
         const req = ctx.getRequest() as Request;
         value['userId'] = value.sub;
