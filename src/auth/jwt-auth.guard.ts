@@ -20,6 +20,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
     const ws = context.switchToWs();
+    this.loggerService.log('socket check', ws.getClient());
     this.loggerService.debug(ws.getClient().name);
     if (ws.getClient() instanceof Socket) {
       const token = ws.getClient().handshake.auth.token;
@@ -32,7 +33,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           secret: this.configService.get<string>('jwt.privkey'),
         });
         this.loggerService.log(
-          '🛠️ check verified value',
+          '🛠️ socket check verified value',
           JSON.stringify(value, null, 2),
         );
         const req = ws.getClient() as Request;
@@ -46,11 +47,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         ApiResponseService.UNAUTHORIZED(error);
       }
     } else {
-      const token = ctx
-        .getRequest()
-        .headers['authorization']?.slice('Bearer '.length);
+      const token =
+        ctx.getRequest().headers['authorization']?.slice('Bearer '.length) ||
+        ws.getClient().handshake.auth.token;
 
-      this.loggerService.log('🛠️ authorization check', token);
+      this.loggerService.log('🛠️ api authorization check', token);
 
       if (!token) ApiResponseService.UNAUTHORIZED('no token');
 
