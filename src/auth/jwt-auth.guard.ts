@@ -48,7 +48,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       }
     } else {
       const token =
-        ctx.getRequest().headers['authorization']?.slice('Bearer '.length) ||
+        ctx.getRequest().headers?.['authorization']?.slice('Bearer '.length) ||
         ws.getClient().handshake.auth.token;
 
       this.loggerService.log('🛠️ api authorization check', token);
