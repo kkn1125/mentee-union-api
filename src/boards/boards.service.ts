@@ -24,19 +24,6 @@ export class BoardsService {
   }
 
   findAllByType(type: string, user_id?: number) {
-    // return this.boardRepository.find({
-    //   where: {
-    //     type,
-
-    //     visible: true,
-    //     user_id,
-    //   },
-    //   relations: {
-    //     user: {
-    //       profiles: true,
-    //     },
-    //   },
-    // });
     const queryBuilder = this.boardRepository.createQueryBuilder('board');
     return queryBuilder
       .leftJoinAndSelect('board.user', 'user')
