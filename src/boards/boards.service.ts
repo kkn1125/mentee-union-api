@@ -70,6 +70,16 @@ export class BoardsService {
   async updateViewCount(id: number) {
     const qr = this.boardRepository.manager.connection.createQueryRunner();
 
+    const board = await this.boardRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!board) {
+      ApiResponseService.NOT_FOUND('not found board', id);
+    }
+
     await qr.startTransaction();
     try {
       const dto = await this.boardRepository.query(
