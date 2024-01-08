@@ -327,6 +327,9 @@ export class SeminarsService {
 
     const seminar = await this.seminarRepository.findOne({
       where: { id: seminar_id },
+      relations: {
+        cover: true,
+      },
     });
 
     if (!seminar) {
@@ -344,6 +347,11 @@ export class SeminarsService {
     const newFileName = filename + '.' + extend;
 
     try {
+      if (seminar.cover) {
+        fs.rmSync(path.join(this.UPLOAD_PROFILE_PATH, seminar.cover.new_name), {
+          recursive: true,
+        });
+      }
       fs.writeFileSync(
         path.join(this.UPLOAD_PROFILE_PATH, newFileName),
         cover.buffer,
