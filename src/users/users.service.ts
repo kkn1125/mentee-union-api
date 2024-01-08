@@ -559,6 +559,9 @@ export class UsersService {
         where: { user_id: id },
       });
       for (const profile of profiles) {
+        fs.rmSync(path.join(this.UPLOAD_PROFILE_PATH, profile.new_name), {
+          recursive: true,
+        });
         await profile.remove({ transaction: true });
       }
       qr.commitTransaction();
