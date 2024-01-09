@@ -226,7 +226,12 @@ export class UsersService {
   }
 
   findOneByEmail(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+    return this.userRepository.findOne({
+      where: { email },
+      relations: {
+        profiles: true,
+      },
+    });
   }
 
   getProfileImage(filename: string) {
