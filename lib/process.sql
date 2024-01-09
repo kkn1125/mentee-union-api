@@ -18,7 +18,10 @@ select * from grade;
 desc board;
 select * from user;
 insert into board (user_id, type, title, content, sequence) values (1, 'notice', '멘티 유니온 공지사항','', 0);
-
+select * from user;
+select * from mentoring_session;
+select * from mentoring;
+delete from mentoring_session;
 show create table seminar;
 select * from board;
 select version();
