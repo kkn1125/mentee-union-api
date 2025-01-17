@@ -153,10 +153,36 @@ export class SeminarsService {
     }
   }
   async remove(id: number) {
+    const seminar = await this.seminarRepository.findOne({
+      where: { id },
+      relations: {
+        cover: true,
+      },
+    });
+
+    if (!seminar) {
+      ApiResponseService.NOT_FOUND('not found seminar', id);
+    }
+
     const qr = this.seminarRepository.manager.connection.createQueryRunner();
+
     await qr.startTransaction();
     try {
-      await this.seminarRepository.softDelete({ id });
+      await this.seminarRepository.delete({ id });
+
+      try {
+        if (seminar.cover) {
+          fs.rmSync(
+            path.join(this.UPLOAD_PROFILE_PATH, seminar.cover.new_name),
+            {
+              recursive: true,
+            },
+          );
+        }
+      } catch (error) {
+        ApiResponseService.BAD_REQUEST('fail remove seminar cover');
+      }
+
       await qr.commitTransaction();
       await qr.release();
       return true;
@@ -327,6 +353,9 @@ export class SeminarsService {
 
     const seminar = await this.seminarRepository.findOne({
       where: { id: seminar_id },
+      relations: {
+        cover: true,
+      },
     });
 
     if (!seminar) {
@@ -344,6 +373,11 @@ export class SeminarsService {
     const newFileName = filename + '.' + extend;
 
     try {
+      if (seminar.cover) {
+        fs.rmSync(path.join(this.UPLOAD_PROFILE_PATH, seminar.cover.new_name), {
+          recursive: true,
+        });
+      }
       fs.writeFileSync(
         path.join(this.UPLOAD_PROFILE_PATH, newFileName),
         cover.buffer,

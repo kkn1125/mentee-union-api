@@ -12,6 +12,7 @@ import { Server } from 'socket.io';
 import { CreateMentoringSessionDto } from './dto/create-mentoring-session.dto';
 import { MentoringSessionGatewayService } from './mentoring-session-gateway.service';
 import { UsersService } from '@/users/users.service';
+import { LoggerService } from '@/logger/logger.service';
 
 @WebSocketGateway({
   cors: {
@@ -24,6 +25,7 @@ export class MentoringSessionGateway {
   server: Server;
 
   constructor(
+    private readonly loggerService: LoggerService,
     private readonly usersService: UsersService,
     private readonly mentoringSessionGatewayService: MentoringSessionGatewayService,
     private readonly messagesService: MessagesService,
@@ -54,7 +56,7 @@ export class MentoringSessionGateway {
       createMentoringSessionDto.password !== ''
     ) {
       createMentoringSessionDto.password = this.usersService.encodingPassword(
-        client.user.email,
+        'session',
         createMentoringSessionDto.password,
       );
     }
@@ -74,6 +76,16 @@ export class MentoringSessionGateway {
       message: client.user.username + '님이 입장했습니다.',
       user_id: null,
     });
+
+    const enteredMentorings =
+      await this.mentoringSessionGatewayService.findEnteredMentees(session.id);
+
+    for (const mentoring of enteredMentorings) {
+      await this.messagesService.readSessionsMessage(
+        mentoring.mentee_id,
+        session.id,
+      );
+    }
 
     const newSession = await this.mentoringSessionGatewayService.findOne(
       session.id,
@@ -146,6 +158,33 @@ export class MentoringSessionGateway {
   }
 
   @UseGuards(JwtAuthGuard)
+  @SubscribeMessage('compareSessionWithPassword')
+  async compareSessionWithPassword(
+    @ConnectedSocket() client: CustomSocket,
+    @MessageBody('session_id') session_id: number,
+    @MessageBody('password') password: string,
+  ) {
+    if (password !== undefined || password !== null || password !== '') {
+      password = this.usersService.encodingPassword('session', password);
+    }
+
+    const session =
+      await this.mentoringSessionGatewayService.findOne(session_id);
+
+    if (session.password === password) {
+      return {
+        ok: true,
+        hash: session.password,
+      };
+    }
+
+    return {
+      ok: false,
+      hash: password,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @SubscribeMessage('outSession')
   async out(
     @ConnectedSocket() client: CustomSocket,
@@ -160,6 +199,9 @@ export class MentoringSessionGateway {
     /* 세션 인원 0명일 시 자동 제거, 아닐 시 잔여 인원에게 퇴장 메세지 */
     const session =
       await this.mentoringSessionGatewayService.findOne(session_id);
+
+    this.loggerService.debug(JSON.stringify(session, null, 2));
+
     if (session.mentorings.length === 0) {
       await session.remove();
     } else {
@@ -168,12 +210,15 @@ export class MentoringSessionGateway {
         message: client.user.username + '님이 퇴장했습니다.',
         user_id: null,
       });
+
+      const newSession =
+        await this.mentoringSessionGatewayService.findOne(session_id);
+
+      this.server.emit('updateSession', { session: newSession });
     }
 
-    const newSession =
-      await this.mentoringSessionGatewayService.findOne(session_id);
-
-    this.server.emit('updateSession', { session: newSession });
+    const sessionList = await this.mentoringSessionGatewayService.findAll();
+    this.server.emit('sessionList', { sessionList });
 
     return {
       event: 'nowSession',

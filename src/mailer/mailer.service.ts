@@ -82,7 +82,7 @@ export class MailerService {
   async sendNoticeFailedSignin(to: string) {
     const mailerConf = this.configService.get<MailerConfig>('mailer');
     const transforter = this.getTransforter();
-
+    const clientPath = mailerConf.clientPath;
     const result = await transforter.sendMail({
       from: `${mailerConf.smtpFromName} <${mailerConf.smtpFromEmail}>`,
       to: `${to}`,
@@ -93,7 +93,7 @@ export class MailerService {
             로그인 시도 한도를 초과했습니다. 보안을 위해 계정이 잠기며, 비밀번호를 재설정해야합니다.
           </div>
           <div>
-            <a href="http://localhost:5000/auth/request-pass?r=%2F">여기를 클릭해서 비밀번호 재설정을 진행해주세요.</a>
+            <a href="${clientPath}/auth/request-pass?r=%2F">여기를 클릭해서 비밀번호 재설정을 진행해주세요.</a>
           </div>
           <div>
             문의처: 02-1231-1231
@@ -115,11 +115,12 @@ export class MailerService {
 
     const sendTime = +new Date();
     const privKey = this.configService.get<string>('mailer.smtpPrivkey');
+    const mailerConf = this.configService.get<MailerConfig>('mailer');
     const token = this.makeToken(email, sendTime, privKey);
     const user = await this.userService.findOneByEmail(email);
-
+    const apiPath = mailerConf.apiPath;
     if (!user) {
-      const checkMailLink = `http://localhost:8080/api/mailer/check?q=${encodeURIComponent(
+      const checkMailLink = `${apiPath}/api/mailer/check?q=${encodeURIComponent(
         `tkn=${token}&e=${email}`,
       )}`;
 
@@ -147,8 +148,10 @@ export class MailerService {
   async sendRequestResetPassword(email: string) {
     const sendTime = +new Date();
     const privKey = this.configService.get<string>('mailer.resetPassPrivkey');
+    const mailerConf = this.configService.get<MailerConfig>('mailer');
     const token = this.makeToken(email, sendTime, privKey);
     const user = await this.userService.findOneByEmail(email);
+    const apiPath = mailerConf.apiPath;
     if (user) {
       const id = user.id;
 
@@ -160,7 +163,7 @@ export class MailerService {
         used: false,
       });
 
-      const checkMailLink = `http://localhost:8080/api/mailer/reset-direction?q=${encodeURIComponent(
+      const checkMailLink = `${apiPath}/api/mailer/reset-direction?q=${encodeURIComponent(
         `type=reset&tkn=${token}&e=${email}`,
       )}`;
       try {
@@ -202,9 +205,12 @@ export class MailerService {
   }
 
   async redirectToResetPasswordPage(token: string, email: string) {
+    const mailerConf = this.configService.get<MailerConfig>('mailer');
+    const clientPath = mailerConf.clientPath;
+
     const session = resetMailMap.get(email);
     if (session) {
-      let clientUrl = 'http://localhost:5000/auth/reset-password';
+      let clientUrl = `${clientPath}/auth/reset-password`;
       if (session.token === token) {
         const privKey = this.configService.get<string>(
           'mailer.resetPassPrivkey',
@@ -321,6 +327,9 @@ export class MailerService {
   }
 
   private makeToken(email: string, sendTime: number, privKey: string) {
+    const mailerConf = this.configService.get<MailerConfig>('mailer');
+    const clientPath = mailerConf.clientPath;
+
     return cryptoJS
       .HmacSHA256(
         'check:' +
@@ -328,7 +337,7 @@ export class MailerService {
           '|' +
           Math.floor(sendTime / 1000) * 1000 +
           '|' +
-          'localhost:5000',
+          clientPath,
         privKey,
       )
       .toString();

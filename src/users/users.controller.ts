@@ -343,14 +343,22 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('dormant')
-  async restore(@Body('email', CheckEmailPipe) email: string) {
-    const flag = await this.mailerService.sendAuthMail(email);
-    if (flag === 'success') {
-      await this.usersService.restoreDormantAccount(email);
-      ApiResponseService.SUCCESS('success restore dormant account');
+  async restore(
+    @Req() req: Request,
+    @Body('email', CheckEmailPipe) email: string,
+  ) {
+    if (req.user.email !== email) {
+      ApiResponseService.UNAUTHORIZED('access denied', email);
     } else {
-      ApiResponseService.BAD_REQUEST(flag);
+      const flag = await this.mailerService.sendAuthMail(email);
+      if (flag === 'success') {
+        await this.usersService.restoreDormantAccount(email);
+        ApiResponseService.SUCCESS('success restore dormant account');
+      } else {
+        ApiResponseService.BAD_REQUEST(flag);
+      }
     }
   }
 

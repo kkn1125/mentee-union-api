@@ -24,19 +24,6 @@ export class BoardsService {
   }
 
   findAllByType(type: string, user_id?: number) {
-    // return this.boardRepository.find({
-    //   where: {
-    //     type,
-
-    //     visible: true,
-    //     user_id,
-    //   },
-    //   relations: {
-    //     user: {
-    //       profiles: true,
-    //     },
-    //   },
-    // });
     const queryBuilder = this.boardRepository.createQueryBuilder('board');
     return queryBuilder
       .leftJoinAndSelect('board.user', 'user')
@@ -82,6 +69,16 @@ export class BoardsService {
 
   async updateViewCount(id: number) {
     const qr = this.boardRepository.manager.connection.createQueryRunner();
+
+    const board = await this.boardRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!board) {
+      ApiResponseService.NOT_FOUND('not found board', id);
+    }
 
     await qr.startTransaction();
     try {

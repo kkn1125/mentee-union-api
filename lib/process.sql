@@ -1,6 +1,8 @@
-use `mentee-union`;
+use `mentee-union-dev`;
 #drop table grade;
+select * from profile;
 select * from user;
+update user set auth_email=1;
 select * from grade;
 delete from grade where id != 1;
 alter table grade auto_increment=2;
@@ -13,8 +15,15 @@ insert into
         ("mentor1", "경험이 더 많은 멘토 등급입니다. 보다 전문적인 멘토링 제공 및 커뮤니티 내 리더십을 강화하는 단계입니다."),
         ("mentor2", "고급 멘토 등급입니다. 멘토링 프로그램 개선에 기여하고 신규 멘토 육성에 노력하는 단계입니다.");
 select * from grade;
-
+desc board;
+select * from user;
+insert into board (user_id, type, title, content, sequence) values (1, 'notice', '멘티 유니온 공지사항','', 0);
+select * from user;
+select * from mentoring_session;
+select * from mentoring;
+delete from mentoring_session;
 show create table seminar;
+select * from board;
 select version();
 insert into
         category (name, description)

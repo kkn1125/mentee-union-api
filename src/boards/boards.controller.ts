@@ -106,21 +106,22 @@ export class BoardsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('qna/:id(\\d+)')
+  @Put(':type/:id(\\d+)')
   async updateQna(
     @Req() req: Request,
+    @Param('type') type: string,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateBoardDto: UpdateBoardDto,
   ) {
-    const board = await this.boardsService.findOneByType(id, 'qna');
+    const board = await this.boardsService.findOneByType(id, type);
     if (board.user_id === req.user.userId) {
       await this.boardsService.update(+id, updateBoardDto);
       return {
-        message: 'success update board',
+        message: `success update board: ${type}`,
       };
     } else {
       return {
-        message: 'not owner this qna',
+        message: `not owner this ${type}`,
       };
     }
   }

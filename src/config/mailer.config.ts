@@ -11,6 +11,8 @@ export default registerAs('mailer', () => ({
   smtpPrivkey: process.env.SMTP_PRIVKEY,
   resetPassPrivkey: process.env.RESET_PASS_PRIVKEY,
   checkResetPassPrivkey: process.env.CHECK_RESET_PASS_PRIVKEY,
+  clientPath: process.env.CLIENT_PATH,
+  apiPath: process.env.API_PATH,
 }));
 
 export type MailerConfig = {
@@ -24,4 +26,6 @@ export type MailerConfig = {
   smtpPrivkey: string;
   resetPassPrivkey: string;
   checkResetPassPrivkey: string;
+  clientPath: string;
+  apiPath: string;
 };

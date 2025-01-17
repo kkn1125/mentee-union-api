@@ -32,7 +32,6 @@ import { BoardsModule } from './boards/boards.module';
     MentoringModule,
     SeminarsModule,
     ResourcesModule,
-    DatabaseModule,
     ForumsModule,
     LoggerModule,
     AuthModule,
