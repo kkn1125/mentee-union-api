@@ -1,5 +1,6 @@
+-- Active: 1737113705955@@menteeunion.kro.kr@3306
 drop schema if exists `mentee-union`;
-
+show tables;
 -- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
@@ -52,9 +53,9 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
-  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
-  INDEX `fk_user_grade1_idx` (`grade_id` ASC) VISIBLE,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC),
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC),
+  INDEX `fk_user_grade1_idx` (`grade_id` ASC),
   CONSTRAINT `fk_user_grade1`
     FOREIGN KEY (`grade_id`)
     REFERENCES `mentee-union`.`grade` (`id`)
@@ -76,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_forums_user_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_forums_user_idx` (`user_id` ASC),
   CONSTRAINT `fk_forums_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -121,8 +122,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_seminars_host1_idx` (`host_id` ASC) VISIBLE,
-  INDEX `fk_seminar_category1_idx` (`category_id` ASC) VISIBLE,
+  INDEX `fk_seminars_host1_idx` (`host_id` ASC),
+  INDEX `fk_seminar_category1_idx` (`category_id` ASC),
   CONSTRAINT `fk_seminar_host1`
     FOREIGN KEY (`host_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -147,8 +148,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`seminar_participant` (
   `deleted_at` DATETIME NULL DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
-  INDEX `fk_seminars_has_users_users1_idx` (`user_id` ASC) VISIBLE,
-  INDEX `fk_seminars_has_users_seminars1_idx` (`seminar_id` ASC) VISIBLE,
+  INDEX `fk_seminars_has_users_users1_idx` (`user_id` ASC),
+  INDEX `fk_seminars_has_users_seminars1_idx` (`seminar_id` ASC),
   PRIMARY KEY (`id`, `user_id`, `seminar_id`),
   CONSTRAINT `fk_seminar_has_user_seminar1`
     FOREIGN KEY (`seminar_id`)
@@ -180,7 +181,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring_session` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_mento-mentee-session_category1_idx` (`category_id` ASC) VISIBLE,
+  INDEX `fk_mento-mentee-session_category1_idx` (`category_id` ASC),
   CONSTRAINT `fk_mento-mentee-session_category1`
     FOREIGN KEY (`category_id`)
     REFERENCES `mentee-union`.`category` (`id`)
@@ -201,8 +202,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`mentoring` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC) VISIBLE,
-  INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
+  INDEX `fk_mentor_mentee_matches_mento_mentee_users2_idx` (`mentee_id` ASC),
+  INDEX `fk_mentor_mentee_matches_mento_mentee_session1_idx` (`mentoring_session_id` ASC),
   CONSTRAINT `fk_mentor_mentee_matches_mento_mentee_users2`
     FOREIGN KEY (`mentee_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -229,8 +230,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`user_recommend` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`, `giver_id`, `receiver_id`),
-  INDEX `fk_users_has_users_users3_idx` (`receiver_id` ASC) VISIBLE,
-  INDEX `fk_users_has_users_users2_idx` (`giver_id` ASC) VISIBLE,
+  INDEX `fk_users_has_users_users3_idx` (`receiver_id` ASC),
+  INDEX `fk_users_has_users_users2_idx` (`giver_id` ASC),
   CONSTRAINT `fk_users_has_users_users2`
     FOREIGN KEY (`giver_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -255,7 +256,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`interest` (
   `deleted_at` DATETIME NULL DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
-  INDEX `fk_interest_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_interest_user1_idx` (`user_id` ASC),
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_interest_user1`
     FOREIGN KEY (`user_id`)
@@ -290,8 +291,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`allow_terms` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`, `terms_id`, `user_id`),
-  INDEX `fk_terms_has_user_user1_idx` (`user_id` ASC) VISIBLE,
-  INDEX `fk_terms_has_user_terms1_idx` (`terms_id` ASC) VISIBLE,
+  INDEX `fk_terms_has_user_user1_idx` (`user_id` ASC),
+  INDEX `fk_terms_has_user_terms1_idx` (`terms_id` ASC),
   CONSTRAINT `fk_terms_has_user_terms1`
     FOREIGN KEY (`terms_id`)
     REFERENCES `mentee-union`.`terms` (`id`)
@@ -316,7 +317,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`profile` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_profile_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_profile_user1_idx` (`user_id` ASC),
   CONSTRAINT `fk_profile_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -339,8 +340,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`message` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_messages_mentoring_session1_idx` (`mentoring_session_id` ASC) VISIBLE,
-  INDEX `fk_message_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_messages_mentoring_session1_idx` (`mentoring_session_id` ASC),
+  INDEX `fk_message_user1_idx` (`user_id` ASC),
   CONSTRAINT `fk_messages_mentoring_session1`
     FOREIGN KEY (`mentoring_session_id`)
     REFERENCES `mentee-union`.`mentoring_session` (`id`)
@@ -362,8 +363,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`read_message` (
   `user_id` INT NULL,
   `message_id` INT NOT NULL,
   PRIMARY KEY (`id`, `message_id`),
-  INDEX `fk_user_has_message_message1_idx` (`message_id` ASC) VISIBLE,
-  INDEX `fk_user_has_message_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_user_has_message_message1_idx` (`message_id` ASC),
+  INDEX `fk_user_has_message_user1_idx` (`user_id` ASC),
   CONSTRAINT `fk_user_has_message_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -393,7 +394,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`board` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_board_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_board_user1_idx` (`user_id` ASC),
   CONSTRAINT `fk_board_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `mentee-union`.`user` (`id`)
@@ -412,8 +413,8 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`forum_like` (
   `deleted_at` DATETIME NULL DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
-  INDEX `fk_user_has_forum_forum1_idx` (`forum_id` ASC) VISIBLE,
-  INDEX `fk_user_has_forum_user1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_user_has_forum_forum1_idx` (`forum_id` ASC),
+  INDEX `fk_user_has_forum_user1_idx` (`user_id` ASC),
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_user_has_forum_user1`
     FOREIGN KEY (`user_id`)
@@ -440,7 +441,7 @@ CREATE TABLE IF NOT EXISTS `mentee-union`.`cover` (
   `created_at` DATETIME NOT NULL DEFAULT NOW(),
   `updated_at` DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
-  INDEX `fk_cover_seminar1_idx` (`seminar_id` ASC) VISIBLE,
+  INDEX `fk_cover_seminar1_idx` (`seminar_id` ASC),
   CONSTRAINT `fk_cover_seminar1`
     FOREIGN KEY (`seminar_id`)
     REFERENCES `mentee-union`.`seminar` (`id`)
