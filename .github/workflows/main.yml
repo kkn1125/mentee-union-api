@@ -1,0 +1,86 @@
+name: Deploy to cloudtype
+on:
+  # push:
+  #   branches:
+  #     - main
+  schedule:
+    - cron: "0,30 0,19,22 * * *"
+  workflow_dispatch:
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Connect deploy key
+        uses: cloudtype-github-actions/connect@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          ghtoken: ${{ secrets.GHP_TOKEN }}
+      - name: Deploy
+        uses: cloudtype-github-actions/deploy@v1
+        with:
+          token: ${{ secrets.CLOUDTYPE_TOKEN }}
+          project: chaplet01/mentee-union-api
+          stage: main
+          yaml: >
+            name: mentee-union-api
+
+            app: node@20
+
+            options:
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: HOST
+                  value: 0.0.0.0
+                - name: SENTRY_DSN
+                  value: https://c03c11829ac6d0df4eb5daf86beec841@o4506268148367360.ingest.sentry.io/4506268149415936
+                - name: PORT
+                  value: "8002"
+                - name: DB_HOST
+                  value: menteeunion.kro.kr
+                - name: DB_PORT
+                  value: "3306"
+                - name: DB_USER
+                  value: mu
+                - name: DB_PASS
+                  value: muadmin123!@#
+                - name: DB_DATABASE_NAME
+                  value: mentee-union
+                - name: PRIVKEY
+                  secret: PRIVKEY
+                - name: SMTP
+                  value: smtp.gmail.com
+                - name: SMTP_ID
+                  value: chaplet01@gmail.com
+                - name: SMTP_PW
+                  secret: SMTP_PW
+                - name: SMTP_SSL
+                  value: "true"
+                - name: SMTP_PORT
+                  value: "587"
+                - name: SMTP_FROM_NAME
+                  value: devkimson
+                - name: SMTP_FROM_EMAIL
+                  value: chaplet01@gmail.com
+                - name: SMTP_PRIVKEY
+                  secret: SMTP_PRIVKEY
+                - name: RESET_PASS_PRIVKEY
+                  secret: RESET_PASS_PRIVKEY
+                - name: CHECK_RESET_PASS_PRIVKEY
+                  secret: CHECK_RESET_PASS_PRIVKEY
+                - name: CLIENT_PATH
+                  value: https://menteeunion.kro.kr
+                - name: API_PATH
+                  value: https://api.menteeunion.kro.kr
+              ports: "8002"
+              install: npm install
+              build: npm run build
+              start: npm run start:prod
+              buildenv: []
+            context:
+              git:
+                url: git@github.com:${{ github.repository }}.git
+                ref: ${{ github.ref }}
